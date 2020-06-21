@@ -1,0 +1,290 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Development &#8212; MeteoSwiss DevOps v0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/groundwork.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Releases" href="Releases.html" />
+    <link rel="prev" title="Welcome to MeteoSwiss DevOps’s documentation!" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="Releases.html" title="Releases"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to MeteoSwiss DevOps’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MeteoSwiss DevOps v0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Code Development</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="code-development">
+<h1>Code Development<a class="headerlink" href="#code-development" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="c-dycore">
+<h2>C++ dycore<a class="headerlink" href="#c-dycore" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="serialized-unittest-data">
+<h3>Serialized unittest data<a class="headerlink" href="#serialized-unittest-data" title="Permalink to this headline">¶</a></h3>
+<p>In order to run test the C++ dycore, the regression tests require a set of serialized data files from COSMO.
+Jenkins runs periodically the serialization (<a class="reference external" href="https://jenkins-mch.cscs.ch/job/cosmo_serialize/">https://jenkins-mch.cscs.ch/job/cosmo_serialize/</a>), which installs all the serialized data set corresponding to the latest master in the g110 project space. In order find the location of the jenkins serialized data follow the steps described in <a class="reference internal" href="#locate-jenkins-serialized-data"><span class="std std-ref">Locate jenkins serialized data</span></a>.</p>
+<p>In a development situation where you are modifying the FORTRAN COSMO dycore, the master serialized data by jenkins will not be compatible with your modifications.
+In that case you need to serialize your own data (see <a class="reference internal" href="#serialize-your-own-data"><span class="std std-ref">Serialize your own data</span></a>).</p>
+<p>Before we can start, we need to load the spack instance</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>. /project/g110/spack/user/admin-tsa/spack/share/spack/setup-env.sh
+</pre></div>
+</div>
+<div class="section" id="locate-jenkins-serialized-data">
+<h4>Locate jenkins serialized data<a class="headerlink" href="#locate-jenkins-serialized-data" title="Permalink to this headline">¶</a></h4>
+<p>In order to find the location of the serialized data, execute the following steps:</p>
+<p>Set the spack spec of COSMO for serialization mode:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@master%pgi real_type=float cosmo_target=cpu +serialize ~cppdycore&quot;</span>
+</pre></div>
+</div>
+<p>Find the spack install location of the serialized data</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">SERIALIZE_DATA</span><span class="o">=</span><span class="k">$(</span>spack location -i <span class="k">$(</span>COSMO_SERIALIZE_SPEC<span class="k">))</span>/data
+</pre></div>
+</div>
+</div>
+<div class="section" id="serialize-your-own-data">
+<h4>Serialize your own data<a class="headerlink" href="#serialize-your-own-data" title="Permalink to this headline">¶</a></h4>
+<p>Set the spack spec (for dev-build version) of COSMO for serialization mode:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@dev-build%pgi real_type=float cosmo_target=cpu +serialize ~cppdycore&quot;</span>
+</pre></div>
+</div>
+<p>In your working directory of cosmo, build a spack COSMO executable for serialization</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;
+spack dev-build <span class="k">$(</span>COSMO_SERIALIZE_SPEC<span class="k">)</span>
+</pre></div>
+</div>
+<p>Load the spack instance modules</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
+<span class="nb">source</span> &lt;<span class="o">(</span> spack module tcl loads <span class="k">$(</span>COSMO_SERIALIZE_SPEC<span class="k">)</span> <span class="o">)</span>
+</pre></div>
+</div>
+<p>Get the testsuite data</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;/cosmo/test/testsuite/data
+./get_data.sh
+</pre></div>
+</div>
+<p>Execute the serialized data generation</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;/cosmo/ACC
+python2 test/serialize/generateUnittestData.py -v -e cosmo_serialize --mpirun<span class="o">=</span>srun
+</pre></div>
+</div>
+<p>Set the path to the serialized data</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">SERIALIZE_DATA</span><span class="o">=</span>&lt;/path/to/cosmo&gt;/cosmo/ACC/test/serialize/data/
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="compile-and-test-a-local-c-dycore">
+<h3>Compile and Test a Local C++ dycore<a class="headerlink" href="#compile-and-test-a-local-c-dycore" title="Permalink to this headline">¶</a></h3>
+<p>This section describes how to compile and test a version of the COSMO C++ dycore from your working directory.</p>
+<p>Set a COSMO C++ dycore spec</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DYCORE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo-dycore@master real_type=float build_type=Release&quot;</span>
+</pre></div>
+</div>
+<p>In your working directory of cosmo, build a C++ dycore executable</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;
+spack dev-build cosmo-dycore@master <span class="nv">real_type</span><span class="o">=</span>float <span class="nv">build_type</span><span class="o">=</span>Release +cuda
+</pre></div>
+</div>
+<p>Load the spack dycore module</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
+<span class="nb">source</span> &lt;<span class="o">(</span> spack module tcl loads <span class="k">$(</span>DYCORE_SPEC<span class="k">)</span> <span class="o">)</span>
+</pre></div>
+</div>
+<p>Run the regression tests on a serialized data set, for example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&lt;/path/to/cosmo&gt;/spack-build/src/tests/regression/regression_tests/regression_tests -p <span class="k">$(</span>SERIALIZE_DATA<span class="k">)</span>/cosmo1_test3
+</pre></div>
+</div>
+</div>
+<div class="section" id="recompile">
+<h3>Recompile<a class="headerlink" href="#recompile" title="Permalink to this headline">¶</a></h3>
+<p>Once the <cite>spack dev-build</cite> has been called, the dycore can be recompile any time by simply calling make on the build directory.</p>
+<p>Load the spack dycore module</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
+<span class="nb">source</span> &lt;<span class="o">(</span> spack module tcl loads <span class="k">$(</span>DYCORE_SPEC<span class="k">)</span> <span class="o">)</span>
+</pre></div>
+</div>
+<p>And build</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;/spack-build/
+make
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="cosmo">
+<h2>COSMO<a class="headerlink" href="#cosmo" title="Permalink to this headline">¶</a></h2>
+<p>Compiling cosmo in a working directory where it is being develop will be different in two cases:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Compile cosmo against a master/mch/release version of the dycore</p></li>
+<li><p>Compile cosmo against a modified version of the dycore</p></li>
+</ul>
+</div></blockquote>
+<p>Before we can start, we need to load the spack instance</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>. /project/g110/spack/user/admin-tsa/spack/share/spack/setup-env.sh
+</pre></div>
+</div>
+<div class="section" id="compile-cosmo-against-a-master-version-of-the-dycore">
+<h3>Compile cosmo against a master version of the dycore<a class="headerlink" href="#compile-cosmo-against-a-master-version-of-the-dycore" title="Permalink to this headline">¶</a></h3>
+<p>In this case, we wish to link against any of the versions installed by jenkins, compiling the C++ dycore is not required.</p>
+<p>Set the spack spec of COSMO:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@master%pgi real_type=float cosmo_target=gpu +cppdycore +claw&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The COSMO spack recipe contains a variant <cite>production</cite>. When activated as <cite>+production</cite> the spec will ensure that all other variants are the ones used to compile an executable for production.</p>
+</div>
+<p>In your working directory of cosmo, compile an executable using spack</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spack dev-build <span class="k">$(</span>COSMO_SPEC<span class="k">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="compile-cosmo-against-a-modified-version-of-the-dycore">
+<h3>Compile cosmo against a modified version of the dycore<a class="headerlink" href="#compile-cosmo-against-a-modified-version-of-the-dycore" title="Permalink to this headline">¶</a></h3>
+<p>First we need to compile the local version of the dycore being develop. Follow the steps in <a class="reference internal" href="#compile-and-test-a-local-c-dycore"><span class="std std-ref">Compile and Test a Local C++ dycore</span></a>.
+Assuming the <cite>DYCORE_SPEC</cite> has already been set, get determine the hash of the spack dycore installation</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DYCORE_HASH</span><span class="o">=</span><span class="k">$(</span>spack find --format <span class="s2">&quot;{hash}&quot;</span> <span class="si">${</span><span class="nv">DYCORE_SPEC</span><span class="si">}</span><span class="k">)</span>
+</pre></div>
+</div>
+<p>We set the COSMO spec</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@master%pgi real_type=float cosmo_target=gpu +cppdycore +claw&quot;</span>
+</pre></div>
+</div>
+<p>Then we can compile a COSMO executable from the working directory</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;/
+spack dev-build -i <span class="k">$(</span>COSMO_SPEC<span class="k">)</span> ^/<span class="k">$(</span>DYCORE_HASH<span class="k">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="testing-cosmo-with-the-testsuite">
+<h3>Testing COSMO with the Testsuite<a class="headerlink" href="#testing-cosmo-with-the-testsuite" title="Permalink to this headline">¶</a></h3>
+<p>The following commands demonstrate how to launch the testsuite for a COSMO executable compiled in dev-build mode</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module use spack-mch/spack/modules/<span class="nv">$slave</span>/linux-rhel7-skylake_avx512
+module use /project/g110/modules/admin-<span class="nv">$slave</span>/linux-rhel7-skylake_avx512/
+<span class="nb">source</span> &lt;<span class="o">(</span> spack module tcl loads <span class="si">${</span><span class="nv">SPACK_SPEC</span><span class="si">}</span> <span class="o">)</span>
+
+<span class="c1"># launch tests</span>
+cp -f &lt;path/to/cosmo&gt;/cosmo/ACC/cosmo_float cosmo/test/testsuite
+<span class="nb">cd</span> cosmo/test/testsuite/data
+./get_data.sh
+<span class="nb">cd</span> ..
+
+<span class="k">if</span> <span class="o">[[</span> <span class="nv">$real_type</span> <span class="o">==</span> <span class="s1">&#39;float&#39;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+  <span class="nb">export</span> <span class="nv">REAL_TYPE</span><span class="o">=</span>FLOAT
+<span class="k">fi</span>
+
+<span class="k">if</span> <span class="o">[[</span> <span class="nv">$target</span> <span class="o">==</span> <span class="s1">&#39;cpu&#39;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+  <span class="nb">export</span> <span class="nv">JENKINS_NO_DYCORE</span><span class="o">=</span>ON
+<span class="k">fi</span>
+
+<span class="nv">ASYNCIO</span><span class="o">=</span>ON sbatch -p debug -W submit.tsa.slurm
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Code Development</a><ul>
+<li><a class="reference internal" href="#c-dycore">C++ dycore</a><ul>
+<li><a class="reference internal" href="#serialized-unittest-data">Serialized unittest data</a><ul>
+<li><a class="reference internal" href="#locate-jenkins-serialized-data">Locate jenkins serialized data</a></li>
+<li><a class="reference internal" href="#serialize-your-own-data">Serialize your own data</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#compile-and-test-a-local-c-dycore">Compile and Test a Local C++ dycore</a></li>
+<li><a class="reference internal" href="#recompile">Recompile</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cosmo">COSMO</a><ul>
+<li><a class="reference internal" href="#compile-cosmo-against-a-master-version-of-the-dycore">Compile cosmo against a master version of the dycore</a></li>
+<li><a class="reference internal" href="#compile-cosmo-against-a-modified-version-of-the-dycore">Compile cosmo against a modified version of the dycore</a></li>
+<li><a class="reference internal" href="#testing-cosmo-with-the-testsuite">Testing COSMO with the Testsuite</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to MeteoSwiss DevOps’s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Releases.html"
+                        title="next chapter">Releases</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/CodeDev.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="Releases.html" title="Releases"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to MeteoSwiss DevOps’s documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MeteoSwiss DevOps v0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Code Development</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Carlos Osuna.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.1.
+    </div>
+  </body>
+</html>

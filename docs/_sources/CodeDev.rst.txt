@@ -219,8 +219,3 @@ The following commands demonstrate how to launch the testsuite for a COSMO execu
 
   ASYNCIO=ON sbatch -p debug -W submit.tsa.slurm
 
-
-Any Other Package
-------------------------
-
-
