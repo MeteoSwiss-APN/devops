@@ -10,6 +10,7 @@ Welcome to MeteoSwiss DevOps's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   CI
    CodeDev
    Releases
    Spack
