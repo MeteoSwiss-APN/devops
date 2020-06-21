@@ -12,6 +12,7 @@ Welcome to MeteoSwiss DevOps's documentation!
 
    CI
    CodeDev
+   TestSuite
    Releases
    Spack
    Deployment

@@ -1,4 +1,6 @@
 
+
+
 <!DOCTYPE html>
 
 <html>
@@ -6,18 +8,24 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code Development &#8212; MeteoSwiss DevOps v0.0.1 documentation</title>
-    <link rel="stylesheet" href="_static/groundwork.css" type="text/css" />
+    <link rel="stylesheet" href="_static/p_sphinx_theme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/local_fonts.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
+    <script src="_static/jquery.cookie.js"></script>
+    <script src="_static/p_sphinx_theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Releases" href="Releases.html" />
-    <link rel="prev" title="Welcome to MeteoSwiss DevOps’s documentation!" href="index.html" /> 
+    <link rel="next" title="Testsuite DevOps" href="TestSuite.html" />
+    <link rel="prev" title="Using the Jenkins Continuous Integration Executables" href="CI.html" /> 
+            <meta name="viewport" content="width=device-width, initial-scale=1">
   </head><body>
+      <div class="relbar-top">
+            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -25,15 +33,18 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="Releases.html" title="Releases"
-             accesskey="N">next</a> |</li>
+          <a href="TestSuite.html" title="Testsuite DevOps"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to MeteoSwiss DevOps’s documentation!"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">MeteoSwiss DevOps v0.0.1 documentation</a> &#187;</li>
+          <a href="CI.html" title="Using the Jenkins Continuous Integration Executables"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+      <li><a href="index.html">MeteoSwiss DevOps v0.0.1 documentation</a> &#187;</li>
+
         <li class="nav-item nav-item-this"><a href="">Code Development</a></li> 
       </ul>
-    </div>  
+    </div>
+      </div>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -119,6 +130,7 @@ spack dev-build cosmo-dycore@master <span class="nv">real_type</span><span class
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&lt;/path/to/cosmo&gt;/spack-build/src/tests/regression/regression_tests/regression_tests -p <span class="k">$(</span>SERIALIZE_DATA<span class="k">)</span>/cosmo1_test3
 </pre></div>
 </div>
+<p>In case you need to run the tests on a compute node, you should prepend the previous command with <cite>srun</cite> and the corresponding arguments.</p>
 </div>
 <div class="section" id="recompile">
 <h3>Recompile<a class="headerlink" href="#recompile" title="Permalink to this headline">¶</a></h3>
@@ -172,7 +184,7 @@ Assuming the <cite>DYCORE_SPEC</cite> has already been set, get determine the ha
 </pre></div>
 </div>
 <p>We set the COSMO spec</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@master%pgi real_type=float cosmo_target=gpu +cppdycore +claw&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@dev-build%pgi real_type=float cosmo_target=gpu +cppdycore +claw&quot;</span>
 </pre></div>
 </div>
 <p>Then we can compile a COSMO executable from the working directory</p>
@@ -184,8 +196,7 @@ spack dev-build -i <span class="k">$(</span>COSMO_SPEC<span class="k">)</span> ^
 <div class="section" id="testing-cosmo-with-the-testsuite">
 <h3>Testing COSMO with the Testsuite<a class="headerlink" href="#testing-cosmo-with-the-testsuite" title="Permalink to this headline">¶</a></h3>
 <p>The following commands demonstrate how to launch the testsuite for a COSMO executable compiled in dev-build mode</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module use spack-mch/spack/modules/<span class="nv">$slave</span>/linux-rhel7-skylake_avx512
-module use /project/g110/modules/admin-<span class="nv">$slave</span>/linux-rhel7-skylake_avx512/
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
 <span class="nb">source</span> &lt;<span class="o">(</span> spack module tcl loads <span class="si">${</span><span class="nv">SPACK_SPEC</span><span class="si">}</span> <span class="o">)</span>
 
 <span class="c1"># launch tests</span>
@@ -207,6 +218,32 @@ cp -f &lt;path/to/cosmo&gt;/cosmo/ACC/cosmo_float cosmo/test/testsuite
 </div>
 </div>
 </div>
+<div class="section" id="any-other-package">
+<h2>Any Other Package<a class="headerlink" href="#any-other-package" title="Permalink to this headline">¶</a></h2>
+<p>The command <cite>spack dev-build</cite> can be used to compile any modified version of a MeteoSwiss software from your working directory.
+However being able to compile any other package might require installing your spack instance, if that package is installed by a jenkins plan.
+An attempt to build your working copy with the command</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spack install &lt;package&gt;@master ...
+</pre></div>
+</div>
+<p>will not perform any compilation if spack identifies that the requested version of the software was already installed by a jenkiny plan.</p>
+<p>That problem is circumvented for COSMO and the C++ dycore by reserving an specific version (<cite>dev-build</cite>) of the spack recipe of the package
+(see <a class="reference external" href="https://github.com/MeteoSwiss-APN/spack-mch/blob/0092230d325525197f8991b172b321ffdb4a118a/packages/cosmo/package.py#L54">link</a>),
+which will not be used by jenkins. Therefore, <cite>spack dev-build cosmo&#64;dev-build</cite> will find that version among the installed in the default spack instance.
+For any other package that does not contain this <cite>dev-build</cite> version, we will install our own spack instance.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone git@github.com:MeteoSwiss-APN/spack-mch.git
+<span class="nb">cd</span> spack-mch
+./config.py -m tsa -i . -r ./spack/etc/spack -p <span class="nv">$PWD</span>/spack -u ON
+
+. spack/share/spack/setup-env.sh
+</pre></div>
+</div>
+<p>And then compile our package with spack in dev-build mode</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/package&gt;
+spack dev-build &lt;package&gt;@&lt;version&gt;
+</pre></div>
+</div>
+</div>
 </div>
 
 
@@ -215,9 +252,9 @@ cp -f &lt;path/to/cosmo&gt;/cosmo/ACC/cosmo_float cosmo/test/testsuite
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+        <div class="sphinxsidebarwrapper"><div class="sphinxlocaltoc">
+    <h3><a href="index.html">Page contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Code Development</a><ul>
 <li><a class="reference internal" href="#c-dycore">C++ dycore</a><ul>
 <li><a class="reference internal" href="#serialized-unittest-data">Serialized unittest data</a><ul>
@@ -235,16 +272,14 @@ cp -f &lt;path/to/cosmo&gt;/cosmo/ACC/cosmo_float cosmo/test/testsuite
 <li><a class="reference internal" href="#testing-cosmo-with-the-testsuite">Testing COSMO with the Testsuite</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#any-other-package">Any Other Package</a></li>
 </ul>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome to MeteoSwiss DevOps’s documentation!</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="Releases.html"
-                        title="next chapter">Releases</a></p>
+  </div>
+
+
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -266,6 +301,8 @@ cp -f &lt;path/to/cosmo&gt;/cosmo/ACC/cosmo_float cosmo/test/testsuite
       </div>
       <div class="clearer"></div>
     </div>
+      <div class="relbar-bottom">
+            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -273,18 +310,22 @@ cp -f &lt;path/to/cosmo&gt;/cosmo/ACC/cosmo_float cosmo/test/testsuite
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="Releases.html" title="Releases"
-             >next</a> |</li>
+          <a href="TestSuite.html" title="Testsuite DevOps"
+             >next</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to MeteoSwiss DevOps’s documentation!"
-             >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">MeteoSwiss DevOps v0.0.1 documentation</a> &#187;</li>
+          <a href="CI.html" title="Using the Jenkins Continuous Integration Executables"
+             >previous</a> &nbsp; &nbsp;</li>
+      <li><a href="index.html">MeteoSwiss DevOps v0.0.1 documentation</a> &#187;</li>
+
         <li class="nav-item nav-item-this"><a href="">Code Development</a></li> 
       </ul>
     </div>
+      </div>
+
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Carlos Osuna.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.1.
     </div>
+      <!-- PSphinxTheme -->
   </body>
 </html>

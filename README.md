@@ -2,7 +2,7 @@
 
 It need the following python components
 
-`pip install sphinx groundwork-sphinx-theme`
+`pip install sphinx PSphinxTheme`
 
 # How to compile and update the documentation
 

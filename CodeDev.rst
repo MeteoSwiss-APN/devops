@@ -112,6 +112,8 @@ Run the regression tests on a serialized data set, for example:
   
   </path/to/cosmo>/spack-build/src/tests/regression/regression_tests/regression_tests -p $(SERIALIZE_DATA)/cosmo1_test3
 
+In case you need to run the tests on a compute node, you should prepend the previous command with `srun` and the corresponding arguments. 
+
 
 Recompile 
 ^^^^^^^^^^^
@@ -182,7 +184,7 @@ We set the COSMO spec
 
 .. code-block:: bash 
  
-  COSMO_SPEC="cosmo@master%pgi real_type=float cosmo_target=gpu +cppdycore +claw"
+  COSMO_SPEC="cosmo@dev-build%pgi real_type=float cosmo_target=gpu +cppdycore +claw"
 
 
 Then we can compile a COSMO executable from the working directory
@@ -199,8 +201,7 @@ The following commands demonstrate how to launch the testsuite for a COSMO execu
 
 .. code-block:: bash 
  
-  module use spack-mch/spack/modules/$slave/linux-rhel7-skylake_avx512
-  module use /project/g110/modules/admin-$slave/linux-rhel7-skylake_avx512/
+  module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
   source <( spack module tcl loads ${SPACK_SPEC} )
 
   # launch tests
@@ -223,4 +224,35 @@ The following commands demonstrate how to launch the testsuite for a COSMO execu
 Any Other Package
 ------------------------
 
+
+The command `spack dev-build` can be used to compile any modified version of a MeteoSwiss software from your working directory. 
+However being able to compile any other package might require installing your spack instance, if that package is installed by a jenkins plan.
+An attempt to build your working copy with the command
+
+.. code-block:: bash
+
+  spack install <package>@master ... 
+
+will not perform any compilation if spack identifies that the requested version of the software was already installed by a jenkiny plan. 
+
+That problem is circumvented for COSMO and the C++ dycore by reserving an specific version (`dev-build`) of the spack recipe of the package 
+(see `link <https://github.com/MeteoSwiss-APN/spack-mch/blob/0092230d325525197f8991b172b321ffdb4a118a/packages/cosmo/package.py#L54>`_), 
+which will not be used by jenkins. Therefore, `spack dev-build cosmo@dev-build` will find that version among the installed in the default spack instance.
+For any other package that does not contain this `dev-build` version, we will install our own spack instance. 
+
+.. code-block:: bash
+
+  
+  git clone git@github.com:MeteoSwiss-APN/spack-mch.git
+  cd spack-mch
+  ./config.py -m tsa -i . -r ./spack/etc/spack -p $PWD/spack -u ON
+
+  . spack/share/spack/setup-env.sh
+
+And then compile our package with spack in dev-build mode
+
+.. code-block:: bash
+
+  cd </path/to/package> 
+  spack dev-build <package>@<version>
 
