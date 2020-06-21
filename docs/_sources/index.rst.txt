@@ -10,7 +10,10 @@ Welcome to MeteoSwiss DevOps's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+   CodeDev
+   Releases
+   Spack
+   Deployment
 
 Indices and tables
 ==================
