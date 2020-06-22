@@ -16,6 +16,7 @@ Welcome to MeteoSwiss DevOps's documentation!
    Releases
    Spack
    Deployment
+   Performance
 
 Indices and tables
 ==================

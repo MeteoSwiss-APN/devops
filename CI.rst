@@ -20,7 +20,7 @@ In order to find the location of that build,
 
 .. code-block:: bash
 
-  spack location $(COSMO_SPEC)
+  spack location ${COSMO_SPEC}
 
 The spec has to be complete and match all variants that were use to build the executable. Jenkins is not building all variant possibilities (it would not be possible). If you need to know the set of variants that are installed, run the following
 
@@ -38,6 +38,7 @@ The spec has to be complete and match all variants that were use to build the ex
   cosmo@5.07.mch1.0.p6+claw cosmo_target=gpu +cppdycore~debug+eccodes+parallel+pollen+production real_type=double ~serialize slave=tsa ~verbose
   cosmo@5.07.mch1.0.p6+claw cosmo_target=gpu +cppdycore~debug+eccodes+parallel+pollen+production real_type=float ~serialize slave=tsa ~verbose
 
+Once you have localized a COSMO executable, you can run it provided you load first the needed environment. 
 In order to use the executable on a compute node, we need first to load the spack module environment for COSMO.
 
 .. code-block:: bash
@@ -46,4 +47,4 @@ In order to use the executable on a compute node, we need first to load the spac
   source <( spack module tcl loads ${SPACK_SPEC} )
 
 
-For an example running the COSMO testsuite on the compute nodes of tsa, see :ref:`Testing COSMO with the Testsuite`
+For an example of how to run the COSMO testsuite on the compute nodes of tsa, see :ref:`Testing COSMO with the Testsuite`

@@ -9,6 +9,7 @@ It need the following python components
 ```
 make html
 cp -r _build/html/* docs/
+./scripts/replace_static.sh
 ```
 
 commit & push

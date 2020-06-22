@@ -8,16 +8,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Using the Jenkins Continuous Integration Executables &#8212; MeteoSwiss DevOps v0.0.1 documentation</title>
-    <link rel="stylesheet" href="_static/p_sphinx_theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/local_fonts.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
-    <script src="_static/jquery.cookie.js"></script>
-    <script src="_static/p_sphinx_theme.js"></script>
+    <link rel="stylesheet" href="static/p_sphinx_theme.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/local_fonts.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="static/documentation_options.js"></script>
+    <script src="static/jquery.js"></script>
+    <script src="static/underscore.js"></script>
+    <script src="static/doctools.js"></script>
+    <script src="static/language_data.js"></script>
+    <script src="static/jquery.cookie.js"></script>
+    <script src="static/p_sphinx_theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Code Development" href="CodeDev.html" />
@@ -64,7 +64,7 @@ For example</p>
 </pre></div>
 </div>
 <p>In order to find the location of that build,</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spack location <span class="k">$(</span>COSMO_SPEC<span class="k">)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spack location <span class="si">${</span><span class="nv">COSMO_SPEC</span><span class="si">}</span>
 </pre></div>
 </div>
 <p>The spec has to be complete and match all variants that were use to build the executable. Jenkins is not building all variant possibilities (it would not be possible). If you need to know the set of variants that are installed, run the following</p>
@@ -81,12 +81,13 @@ cosmo@5.07.mch1.0.p6+claw <span class="nv">cosmo_target</span><span class="o">=<
 cosmo@5.07.mch1.0.p6+claw <span class="nv">cosmo_target</span><span class="o">=</span>gpu +cppdycore~debug+eccodes+parallel+pollen+production <span class="nv">real_type</span><span class="o">=</span>float ~serialize <span class="nv">slave</span><span class="o">=</span>tsa ~verbose
 </pre></div>
 </div>
-<p>In order to use the executable on a compute node, we need first to load the spack module environment for COSMO.</p>
+<p>Once you have localized a COSMO executable, you can run it provided you load first the needed environment.
+In order to use the executable on a compute node, we need first to load the spack module environment for COSMO.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
 <span class="nb">source</span> &lt;<span class="o">(</span> spack module tcl loads <span class="si">${</span><span class="nv">SPACK_SPEC</span><span class="si">}</span> <span class="o">)</span>
 </pre></div>
 </div>
-<p>For an example running the COSMO testsuite on the compute nodes of tsa, see <a class="reference internal" href="CodeDev.html#testing-cosmo-with-the-testsuite"><span class="std std-ref">Testing COSMO with the Testsuite</span></a></p>
+<p>For an example of how to run the COSMO testsuite on the compute nodes of tsa, see <a class="reference internal" href="CodeDev.html#testing-cosmo-with-the-testsuite"><span class="std std-ref">Testing COSMO with the Testsuite</span></a></p>
 </div>
 
 

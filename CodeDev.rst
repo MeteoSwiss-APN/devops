@@ -8,9 +8,9 @@ Serialized unittest data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In order to run test the C++ dycore, the regression tests require a set of serialized data files from COSMO. 
-Jenkins runs periodically the serialization (`<https://jenkins-mch.cscs.ch/job/cosmo_serialize/>`_), which installs all the serialized data set corresponding to the latest master in the g110 project space. In order find the location of the jenkins serialized data follow the steps described in :ref:`Locate jenkins serialized data`.
+Jenkins runs periodically the serialization (`<https://jenkins-mch.cscs.ch/job/cosmo_serialize/>`_), which installs all the serialized data set corresponding to the latest master in the g110 project space. In order to find the location of the jenkins serialized data follow the steps described in :ref:`Locate jenkins serialized data`.
 
-In a development situation where you are modifying the FORTRAN COSMO dycore, the master serialized data by jenkins will not be compatible with your modifications. 
+In a different development situation where you are modifying the FORTRAN COSMO dycore, the master serialized data by jenkins will not be compatible with your modifications. 
 In that case you need to serialize your own data (see :ref:`Serialize your own data`).
 
 Before we can start, we need to load the spack instance
@@ -22,7 +22,7 @@ Before we can start, we need to load the spack instance
 
 Locate jenkins serialized data
 """"""""""""""""""""""""""""""""
-In order to find the location of the serialized data, execute the following steps: 
+This section describes how to find the location of the serialized data by jenkins for the master version of COSMO. 
 
 Set the spack spec of COSMO for serialization mode: 
 
@@ -34,7 +34,7 @@ Find the spack install location of the serialized data
 
 .. code-block:: bash
 
-  SERIALIZE_DATA=$(spack location -i $(COSMO_SERIALIZE_SPEC))/data
+  SERIALIZE_DATA=$(spack location -i ${COSMO_SERIALIZE_SPEC})/data
 
 
 Serialize your own data
@@ -51,14 +51,14 @@ In your working directory of cosmo, build a spack COSMO executable for serializa
 .. code-block:: bash
 
   cd </path/to/cosmo>
-  spack dev-build $(COSMO_SERIALIZE_SPEC)
+  spack dev-build ${COSMO_SERIALIZE_SPEC}
 
 Load the spack instance modules
 
 .. code-block:: bash
 
   module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
-  source <( spack module tcl loads $(COSMO_SERIALIZE_SPEC) )
+  source <( spack module tcl loads ${COSMO_SERIALIZE_SPEC} )
 
 Get the testsuite data
 
@@ -75,7 +75,7 @@ Execute the serialized data generation
   python2 test/serialize/generateUnittestData.py -v -e cosmo_serialize --mpirun=srun
 
 
-Set the path to the serialized data
+Set the path to the serialized data (later it will be used in this guide)
 
 .. code-block:: bash
 
@@ -104,13 +104,13 @@ Load the spack dycore module
 .. code-block:: bash
 
   module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
-  source <( spack module tcl loads $(DYCORE_SPEC) )
+  source <( spack module tcl loads ${DYCORE_SPEC} )
 
 Run the regression tests on a serialized data set, for example: 
 
 .. code-block:: bash
   
-  </path/to/cosmo>/spack-build/src/tests/regression/regression_tests/regression_tests -p $(SERIALIZE_DATA)/cosmo1_test3
+  </path/to/cosmo>/spack-build/src/tests/regression/regression_tests/regression_tests -p ${SERIALIZE_DATA}/cosmo1_test3
 
 In case you need to run the tests on a compute node, you should prepend the previous command with `srun` and the corresponding arguments. 
 
@@ -118,16 +118,16 @@ In case you need to run the tests on a compute node, you should prepend the prev
 Recompile 
 ^^^^^^^^^^^
 
-Once the `spack dev-build` has been called, the dycore can be recompile any time by simply calling make on the build directory.
-
-Load the spack dycore module
+Once the `spack dev-build` has been called, the dycore can be recompiled any time by simply calling make on the build directory.
+Like that, spack is only needed to setup the build and environment. 
+In order to use flat make for further compilations, you need to load first the spack dycore module
 
 .. code-block:: bash
 
   module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
-  source <( spack module tcl loads $(DYCORE_SPEC) )
+  source <( spack module tcl loads ${DYCORE_SPEC} )
 
-And build 
+And build simply calling make in the right build directory 
 
 .. code-block:: bash
 
@@ -153,13 +153,23 @@ Before we can start, we need to load the spack instance
 Compile cosmo against a master version of the dycore
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In this case, we wish to link against any of the versions installed by jenkins, compiling the C++ dycore is not required. 
+In this section we describe how to compile COSMO and link against any of the versions installed by jenkins.
+In this case  compiling the C++ dycore is not required. 
+First we need to find the hash of the C++ dycore installation for the desired variant (we set a dycore spec as an example): 
+
+.. code-block:: bash
+
+  DYCORE_SPEC="cosmo-dycore@master real_type=float build_type=Release +cuda"
+  DYCORE_HASH=$(spack find --format "{hash}" ${DYCORE_SPEC})
+
+If the configuration of variants required does not exists (it means it has not been installed by jenkins), we will have to compile
+the C++ dycore as well (you can skip the rest of this section and jump instead to :ref:`Compile cosmo against a modified version of the dycore`)
 
 Set the spack spec of COSMO:
 
 .. code-block:: bash 
  
-  COSMO_SPEC="cosmo@master%pgi real_type=float cosmo_target=gpu +cppdycore +claw"
+  COSMO_SPEC="cosmo@master%pgi real_type=float cosmo_target=gpu +cppdycore +claw ^/${DYCORE_HASH}"
 
 .. note:: The COSMO spack recipe contains a variant `production`. When activated as `+production` the spec will ensure that all other variants are the ones used to compile an executable for production. 
 
@@ -167,20 +177,21 @@ In your working directory of cosmo, compile an executable using spack
 
 .. code-block:: bash
   
-  spack dev-build $(COSMO_SPEC)
+  spack dev-build -i ${COSMO_SPEC}
 
 
 Compile cosmo against a modified version of the dycore
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First we need to compile the local version of the dycore being develop. Follow the steps in :ref:`Compile and Test a Local C++ dycore`.
-Assuming the `DYCORE_SPEC` has already been set, get determine the hash of the spack dycore installation
+In this section we show how to compile a version of COSMO where the C++ dycore has been modified or the version and variant configuration has not been installed by jenkins.
+First we need to compile the local version of the dycore. Follow the steps in :ref:`Compile and Test a Local C++ dycore`.
+Assuming the `DYCORE_SPEC` has already been set, we determine the hash of the spack dycore installation
 
 .. code-block:: bash
 
   DYCORE_HASH=$(spack find --format "{hash}" ${DYCORE_SPEC})
 
-We set the COSMO spec
+Then we set the COSMO spec
 
 .. code-block:: bash 
  
@@ -192,7 +203,7 @@ Then we can compile a COSMO executable from the working directory
 .. code-block:: bash
 
   cd </path/to/cosmo>/
-  spack dev-build -i $(COSMO_SPEC) ^/$(DYCORE_HASH)
+  spack dev-build -i ${COSMO_SPEC} ^/${DYCORE_HASH}
 
 Testing COSMO with the Testsuite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
