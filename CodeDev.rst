@@ -207,7 +207,7 @@ First we need to find the hash of the C++ dycore installation for the desired va
   DYCORE_HASH=$(spack find --format "{hash}" ${DYCORE_SPEC})
 
 If the configuration of variants required does not exists (it means it has not been installed by jenkins), we will have to compile
-the C++ dycore as well (you can skip the rest of this section and jump instead to :ref:`Compile cosmo against a modified version of the dycore`)
+the C++ dycore as well (you can skip the rest of this section and jump instead to :ref:`Compile a local version of COSMO`)
 
 Set the spack spec of COSMO:
 
