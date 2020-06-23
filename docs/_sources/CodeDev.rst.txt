@@ -138,8 +138,8 @@ And build simply calling make in the right build directory
 COSMO
 -------------
 
-Compiling cosmo in a working directory where it is being develop will be different in two cases: 
- 
+We distinguish two sceneraios for compiling cosmo from a working directory:
+
  * :ref:`Compile a local version of COSMO` (that will also compile the C++ dycore locally)
  * :ref:`Compile cosmo against a master/release version of the dycore` (that has already been installed by jenkins)
 
