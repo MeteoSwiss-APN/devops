@@ -140,8 +140,8 @@ COSMO
 
 Compiling cosmo in a working directory where it is being develop will be different in two cases: 
  
- * Compile cosmo against a master/mch/release version of the dycore
- * Compile cosmo against a modified version of the dycore
+ * :ref:`Compile a local version of COSMO` (that will also compile the C++ dycore locally)
+ * :ref:`Compile cosmo against a master/release version of the dycore` (that has already been installed by jenkins)
 
 Before we can start, we need to load the spack instance
 
@@ -194,7 +194,7 @@ Finally we can compile a COSMO executable from the working directory
   spack dev-build -i ${COSMO_SPEC} ^/${DYCORE_HASH}
 
 
-Compile cosmo against a master version of the dycore
+Compile cosmo against a master/release version of the dycore
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In case the local dycore has not been modified and you know it has been installed by jenkins, we can compile COSMO and link against the version installed by jenkins.

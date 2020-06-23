@@ -153,8 +153,8 @@ make
 <p>Compiling cosmo in a working directory where it is being develop will be different in two cases:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>Compile cosmo against a master/mch/release version of the dycore</p></li>
-<li><p>Compile cosmo against a modified version of the dycore</p></li>
+<li><p><a class="reference internal" href="#compile-a-local-version-of-cosmo"><span class="std std-ref">Compile a local version of COSMO</span></a> (that will also compile the C++ dycore locally)</p></li>
+<li><p><a class="reference internal" href="#compile-cosmo-against-a-master-release-version-of-the-dycore"><span class="std std-ref">Compile cosmo against a master/release version of the dycore</span></a> (that has already been installed by jenkins)</p></li>
 </ul>
 </div></blockquote>
 <p>Before we can start, we need to load the spack instance</p>
@@ -191,8 +191,8 @@ spack dev-build -i <span class="si">${</span><span class="nv">COSMO_SPEC</span><
 </pre></div>
 </div>
 </div>
-<div class="section" id="compile-cosmo-against-a-master-version-of-the-dycore">
-<h3>Compile cosmo against a master version of the dycore<a class="headerlink" href="#compile-cosmo-against-a-master-version-of-the-dycore" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="compile-cosmo-against-a-master-release-version-of-the-dycore">
+<h3>Compile cosmo against a master/release version of the dycore<a class="headerlink" href="#compile-cosmo-against-a-master-release-version-of-the-dycore" title="Permalink to this headline">¶</a></h3>
 <p>In case the local dycore has not been modified and you know it has been installed by jenkins, we can compile COSMO and link against the version installed by jenkins.
 In this case  compiling the C++ dycore is not required.
 First we need to find the hash of the C++ dycore installation for the desired variant (we set a dycore spec as an example):</p>
@@ -290,7 +290,7 @@ spack dev-build &lt;package&gt;@&lt;version&gt;
 </li>
 <li><a class="reference internal" href="#cosmo">COSMO</a><ul>
 <li><a class="reference internal" href="#compile-a-local-version-of-cosmo">Compile a local version of COSMO</a></li>
-<li><a class="reference internal" href="#compile-cosmo-against-a-master-version-of-the-dycore">Compile cosmo against a master version of the dycore</a></li>
+<li><a class="reference internal" href="#compile-cosmo-against-a-master-release-version-of-the-dycore">Compile cosmo against a master/release version of the dycore</a></li>
 <li><a class="reference internal" href="#testing-cosmo-with-the-testsuite">Testing COSMO with the Testsuite</a></li>
 </ul>
 </li>
