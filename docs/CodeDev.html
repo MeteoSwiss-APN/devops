@@ -62,7 +62,8 @@ Jenkins runs periodically the serialization (<a class="reference external" href=
 <p>In a different development situation where you are modifying the FORTRAN COSMO dycore, the master serialized data by jenkins will not be compatible with your modifications.
 In that case you need to serialize your own data (see <a class="reference internal" href="#serialize-your-own-data"><span class="std std-ref">Serialize your own data</span></a>).</p>
 <p>Before we can start, we need to load the spack instance</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>. /project/g110/spack/user/admin-tsa/spack/share/spack/setup-env.sh
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module load python/3.7.4
+. /project/g110/spack/user/tsa/spack/share/spack/setup-env.sh
 </pre></div>
 </div>
 <div class="section" id="locate-jenkins-serialized-data">
@@ -158,14 +159,15 @@ make
 </ul>
 </div></blockquote>
 <p>Before we can start, we need to load the spack instance</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>. /project/g110/spack/user/admin-tsa/spack/share/spack/setup-env.sh
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module load python/3.7.4
+. /project/g110/spack/user/tsa/spack/share/spack/setup-env.sh
 </pre></div>
 </div>
 <div class="section" id="compile-a-local-version-of-cosmo">
 <h3>Compile a local version of COSMO<a class="headerlink" href="#compile-a-local-version-of-cosmo" title="Permalink to this headline">¶</a></h3>
 <p>In this section we show how to compile a version of COSMO with a local C++ dycore.
 First we need to compile the local version of the dycore (as described in <a class="reference internal" href="#compile-and-test-a-local-c-dycore"><span class="std std-ref">Compile and Test a Local C++ dycore</span></a>).</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DYCORE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo-dycore@master real_type=float build_type=Release&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DYCORE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo-dycore@dev-build real_type=float build_type=Release&quot;</span>
 </pre></div>
 </div>
 <p>Before installing the dycore we need to remove any previous installation</p>
@@ -253,7 +255,8 @@ An attempt to build your working copy with the command</p>
 (see <a class="reference external" href="https://github.com/MeteoSwiss-APN/spack-mch/blob/0092230d325525197f8991b172b321ffdb4a118a/packages/cosmo/package.py#L54">link</a>),
 which will not be used by jenkins. Therefore, <cite>spack dev-build cosmo&#64;dev-build</cite> will find that version among the installed in the default spack instance.
 For any other package that does not contain this <cite>dev-build</cite> version, we will install our own spack instance.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone git@github.com:MeteoSwiss-APN/spack-mch.git
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module load python/3.7.4
+git clone git@github.com:MeteoSwiss-APN/spack-mch.git
 <span class="nb">cd</span> spack-mch
 ./config.py -m tsa -i . -r ./spack/etc/spack -p <span class="nv">$PWD</span>/spack -u ON
 

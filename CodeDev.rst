@@ -17,7 +17,8 @@ Before we can start, we need to load the spack instance
 
 .. code-block:: bash
 
-   . /project/g110/spack/user/admin-tsa/spack/share/spack/setup-env.sh
+  module load python/3.7.4  
+  . /project/g110/spack/user/tsa/spack/share/spack/setup-env.sh
 
 
 Locate jenkins serialized data
@@ -147,7 +148,8 @@ Before we can start, we need to load the spack instance
 
 .. code-block:: bash
 
-  . /project/g110/spack/user/admin-tsa/spack/share/spack/setup-env.sh
+  module load python/3.7.4
+  . /project/g110/spack/user/tsa/spack/share/spack/setup-env.sh
 
 Compile a local version of COSMO
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -157,7 +159,7 @@ First we need to compile the local version of the dycore (as described in :ref:`
 
 .. code-block:: bash
 
-  DYCORE_SPEC="cosmo-dycore@master real_type=float build_type=Release"
+  DYCORE_SPEC="cosmo-dycore@dev-build real_type=float build_type=Release"
 
 Before installing the dycore we need to remove any previous installation
 
@@ -272,7 +274,7 @@ For any other package that does not contain this `dev-build` version, we will in
 
 .. code-block:: bash
 
-  
+  module load python/3.7.4 
   git clone git@github.com:MeteoSwiss-APN/spack-mch.git
   cd spack-mch
   ./config.py -m tsa -i . -r ./spack/etc/spack -p $PWD/spack -u ON

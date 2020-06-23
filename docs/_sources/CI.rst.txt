@@ -14,13 +14,14 @@ Before we can use spack commands, we need to load the spack instance
 
 .. code-block:: bash
   
+  module load python/3.7.4
   . /project/g110/spack/user/tsa/spack/share/spack/setup-env.sh
 
 In order to find the location of that build,
 
 .. code-block:: bash
 
-  spack location ${COSMO_SPEC}
+  spack location -i ${COSMO_SPEC}
 
 The spec has to be complete and match all variants that were use to build the executable. Jenkins is not building all variant possibilities (it would not be possible). If you need to know the set of variants that are installed, run the following
 
