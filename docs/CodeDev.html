@@ -176,7 +176,7 @@ First we need to compile the local version of the dycore (as described in <a cla
 </div>
 <p>Next build and install a local C++ dycore executable</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;
-spack dev-build cosmo-dycore@master <span class="nv">real_type</span><span class="o">=</span>float <span class="nv">build_type</span><span class="o">=</span>Release +cuda
+spack dev-build cosmo-dycore@dev-build <span class="nv">real_type</span><span class="o">=</span>float <span class="nv">build_type</span><span class="o">=</span>Release +cuda
 </pre></div>
 </div>
 <p>Find the hash of the <cite>DYCORE_SPEC</cite> that has just been installed.</p>
@@ -224,7 +224,7 @@ the C++ dycore as well (you can skip the rest of this section and jump instead t
 <span class="nb">source</span> &lt;<span class="o">(</span> spack module tcl loads <span class="si">${</span><span class="nv">SPACK_SPEC</span><span class="si">}</span> <span class="o">)</span>
 
 <span class="c1"># launch tests</span>
-cp -f &lt;path/to/cosmo&gt;/cosmo/ACC/cosmo_float cosmo/test/testsuite
+cp -f &lt;path/to/cosmo&gt;/cosmo/ACC/cosmo_gpu cosmo/test/testsuite
 <span class="nb">cd</span> cosmo/test/testsuite/data
 ./get_data.sh
 <span class="nb">cd</span> ..
@@ -250,7 +250,7 @@ An attempt to build your working copy with the command</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spack install &lt;package&gt;@master ...
 </pre></div>
 </div>
-<p>will not perform any compilation if spack identifies that the requested version of the software was already installed by a jenkiny plan.</p>
+<p>will not perform any compilation if spack identifies that the requested version of the software was already installed by a jenkins plan.</p>
 <p>That problem is circumvented for COSMO and the C++ dycore by reserving an specific version (<cite>dev-build</cite>) of the spack recipe of the package
 (see <a class="reference external" href="https://github.com/MeteoSwiss-APN/spack-mch/blob/0092230d325525197f8991b172b321ffdb4a118a/packages/cosmo/package.py#L54">link</a>),
 which will not be used by jenkins. Therefore, <cite>spack dev-build cosmo&#64;dev-build</cite> will find that version among the installed in the default spack instance.
@@ -258,7 +258,7 @@ For any other package that does not contain this <cite>dev-build</cite> version,
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module load python/3.7.4
 git clone git@github.com:MeteoSwiss-APN/spack-mch.git
 <span class="nb">cd</span> spack-mch
-./config.py -m tsa -i . -r ./spack/etc/spack -p <span class="nv">$PWD</span>/spack -u ON
+./config.py -m tsa -i . -p <span class="nv">$PWD</span>/spack -u ON
 
 . spack/share/spack/setup-env.sh
 </pre></div>
