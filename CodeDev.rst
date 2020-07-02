@@ -96,7 +96,7 @@ In your working directory of cosmo, build a spack COSMO executable for serializa
 .. code-block:: bash
 
   cd </path/to/cosmo>
-  spack devbuildcosmo ${COSMO_SERIALIZE_SPEC} #use -c option for a clean build
+  spack dev-build --test=root ${COSMO_SERIALIZE_SPEC}
 
 Compile and Test a Local C++ dycore (manually)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -151,7 +151,7 @@ And build simply calling make in the right build directory
   cd </path/to/cosmo>/spack-build/
   make
 
-Compile and Test a Local C++ dycore using devbuildcosmo (might be unstable)
+Compile and Test a Local C++ dycore using dev-build (might be unstable)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Set a COSMO C++ dycore spec
@@ -160,21 +160,22 @@ Set a COSMO C++ dycore spec
 
   DYCORE_SPEC="cosmo-dycore@master real_type=float build_type=Release"
 
-In your working directory of cosmo, build a C++ dycore executable, stop it manually after the test of dycore and before the cosmo installation begins
+In your working directory of cosmo, build, install a C++ dycore executable and launch its tests using:
 
 .. code-block:: bash
 
   cd </path/to/cosmo>
-  spack devbuildcosmo -t cosmo@dev-build ^DYCORE_SPEC
+  spack dev-build --test=root $DYCORE_SPEC
 
-Recompile using devbuildcosmo (might be unstable)
+Recompile using dev-build (might be unstable)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Just use directly devbuildcosmo still you have to stop it manually before the cosmo installation:
+Just use the -u build option of dev-build. If you already have an installed dycore you have to first uninstall it:
 
 .. code-block:: bash
-
+  
+  spack uninstall $DYCORE_SPEC
   cd </path/to/cosmo>
-  spack devbuildcosmo cosmo@dev-build ^DYCORE_SPEC #use -c option if you want a make clean
+  spack dev-build -u build $DYCORE_SPEC
 
 COSMO
 -------------
@@ -235,7 +236,7 @@ Finally we can compile a COSMO executable from the working directory
   cd </path/to/cosmo>/
   spack dev-build -i ${COSMO_SPEC} ^/${DYCORE_HASH}
 
-Compile a local version of COSMO using devbuildcosmo (might be unstable)
+Compile a local version of COSMO using dev-build (might be unstable)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Set the COSMO spec
 
@@ -246,7 +247,7 @@ Set the COSMO spec
 .. code-block:: bash
 
   cd </path/to/cosmo>
-  spack devbuildcosmo $COSMO_SPEC #use the -t option for testing, -c for clean build
+  spack dev-build --test=root $COSMO_SPEC
 
 
 Compile cosmo against a master/release version of the dycore
@@ -303,7 +304,7 @@ Set the COSMO spec
 .. code-block:: bash
 
   cd </path/to/cosmo>
-  spack devbuildcosmo -w $COSMO_SPEC #use the -t option for testing, -c for clean build
+  spack devbuildcosmo $COSMO_SPEC #use the -t option for testing, -c for clean build
 
 
 Testing COSMO with the Testsuite
