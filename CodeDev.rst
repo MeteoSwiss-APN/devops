@@ -213,7 +213,7 @@ Next build and install a local C++ dycore executable
 .. code-block:: bash
 
   cd </path/to/cosmo>
-  spack dev-build cosmo-dycore@master real_type=float build_type=Release +cuda
+  spack dev-build cosmo-dycore@dev-build real_type=float build_type=Release +cuda
 
 
 Find the hash of the `DYCORE_SPEC` that has just been installed.
@@ -313,12 +313,12 @@ Testing COSMO with the Testsuite
 The following commands demonstrate how to launch the testsuite for a COSMO executable compiled in dev-build mode
 
 .. code-block:: bash 
- 
+
   module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
   source <( spack module tcl loads ${SPACK_SPEC} )
 
   # launch tests
-  cp -f <path/to/cosmo>/cosmo/ACC/cosmo_float cosmo/test/testsuite
+  cp -f <path/to/cosmo>/cosmo/ACC/cosmo_gpu cosmo/test/testsuite
   cd cosmo/test/testsuite/data
   ./get_data.sh
   cd ..
@@ -367,7 +367,7 @@ An attempt to build your working copy with the command
 
   spack install <package>@master ... 
 
-will not perform any compilation if spack identifies that the requested version of the software was already installed by a jenkiny plan. 
+will not perform any compilation if spack identifies that the requested version of the software was already installed by a jenkins plan. 
 
 That problem is circumvented for COSMO and the C++ dycore by reserving an specific version (`dev-build`) of the spack recipe of the package 
 (see `link <https://github.com/MeteoSwiss-APN/spack-mch/blob/0092230d325525197f8991b172b321ffdb4a118a/packages/cosmo/package.py#L54>`_), 
@@ -379,7 +379,7 @@ For any other package that does not contain this `dev-build` version, we will in
   module load python/3.7.4 
   git clone git@github.com:MeteoSwiss-APN/spack-mch.git
   cd spack-mch
-  ./config.py -m tsa -i . -r ./spack/etc/spack -p $PWD/spack -u ON
+  ./config.py -m tsa -i . -p $PWD/spack -u ON
 
   . spack/share/spack/setup-env.sh
 
