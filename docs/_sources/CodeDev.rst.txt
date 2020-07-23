@@ -159,7 +159,7 @@ First we need to compile the local version of the dycore (as described in :ref:`
 
 .. code-block:: bash
 
-  DYCORE_SPEC="cosmo-dycore@dev-build real_type=float build_type=Release"
+  DYCORE_SPEC="cosmo-dycore@dev-build real_type=float build_type=Release ^openmpi%pgi"
 
 Before installing the dycore we need to remove any previous installation
 
