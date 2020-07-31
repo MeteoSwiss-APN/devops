@@ -1,5 +1,83 @@
-Code Development
+  Code Development
 ==================
+
+COSMO
+-------------
+
+Before we can start, we need to load the spack instance
+
+.. code-block:: bash
+
+  module load python/3.7.4
+  . /project/g110/spack/user/tsa/spack/share/spack/setup-env.sh
+
+Compile a local version of COSMO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In this section we show how to compile a version of COSMO with a local C++ dycore. 
+Note: This is only required for GPU. For cpu we recomend to compile without c++ dycore. 
+
+First we need to compile the local version of the dycore (as described in :ref:`Compile and Test a Local C++ dycore`).
+
+.. code-block:: bash
+
+  DYCORE_SPEC="cosmo-dycore@dev-build real_type=double +cuda build_type=Release ^openmpi%pgi"
+
+Before installing the dycore we need to remove any previous installation
+
+.. code-block:: bash
+
+  spack uninstall -f ${DYCORE_SPEC}
+
+Next build and install a local C++ dycore executable
+
+.. code-block:: bash
+
+  cd </path/to/cosmo>
+  spack dev-build {DYCORE_SPEC}
+
+
+Find the hash of the `DYCORE_SPEC` that has just been installed.
+
+.. code-block:: bash
+
+  DYCORE_HASH=$(spack find --format "{hash}" ${DYCORE_SPEC})
+
+Make sure the DYCORE_HASH only contains one hash (e.g. echo $DYCORE_HASH)
+Set the COSMO spec
+
+.. code-block:: bash 
+
+  COSMO_SPEC="cosmo@dev-build%pgi real_type=double cosmo_target=gpu +cppdycore +claw"
+
+
+Finally we can compile a COSMO executable from the working directory
+
+.. code-block:: bash
+
+  cd </path/to/cosmo>/
+  spack dev-build -i ${COSMO_SPEC} ^/${DYCORE_HASH}
+
+
+Testing COSMO with the Testsuite
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following commands demonstrate how to launch the testsuite for a COSMO executable compiled in dev-build mode
+
+.. code-block:: bash 
+
+  # launch tests
+  cp -f ./cosmo/ACC/cosmo_gpu cosmo/test/testsuite
+  cd cosmo/test/testsuite
+  ./data/get_data.sh
+
+  # get env
+  spack build-env --dump cosmo.env $COSMO_SPEC --
+
+  export REAL_TYPE=DOUBLE #FLOAT for float
+  
+  sbatch -p debug submit.tsa.slurm
+
 
 C++ dycore
 -------------
@@ -134,123 +212,6 @@ And build simply calling make in the right build directory
 
   cd </path/to/cosmo>/spack-build/
   make
-
-
-COSMO
--------------
-
-We distinguish two sceneraios for compiling cosmo from a working directory:
-
- * :ref:`Compile a local version of COSMO` (that will also compile the C++ dycore locally)
- * :ref:`Compile cosmo against a master/release version of the dycore` (that has already been installed by jenkins)
-
-Before we can start, we need to load the spack instance
-
-.. code-block:: bash
-
-  module load python/3.7.4
-  . /project/g110/spack/user/tsa/spack/share/spack/setup-env.sh
-
-Compile a local version of COSMO
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-In this section we show how to compile a version of COSMO with a local C++ dycore. 
-First we need to compile the local version of the dycore (as described in :ref:`Compile and Test a Local C++ dycore`).
-
-.. code-block:: bash
-
-  DYCORE_SPEC="cosmo-dycore@dev-build real_type=float build_type=Release ^openmpi%pgi"
-
-Before installing the dycore we need to remove any previous installation
-
-.. code-block:: bash
-
-  spack uninstall -f ${DYCORE_SPEC}
-
-Next build and install a local C++ dycore executable
-
-.. code-block:: bash
-
-  cd </path/to/cosmo>
-  spack dev-build cosmo-dycore@dev-build real_type=float build_type=Release +cuda
-
-
-Find the hash of the `DYCORE_SPEC` that has just been installed.
-
-.. code-block:: bash
-
-  DYCORE_HASH=$(spack find --format "{hash}" ${DYCORE_SPEC})
-
-Set the COSMO spec
-
-.. code-block:: bash 
-
-  COSMO_SPEC="cosmo@dev-build%pgi real_type=float cosmo_target=gpu +cppdycore +claw"
-
-
-Finally we can compile a COSMO executable from the working directory
-
-.. code-block:: bash
-
-  cd </path/to/cosmo>/
-  spack dev-build -i ${COSMO_SPEC} ^/${DYCORE_HASH}
-
-
-Compile cosmo against a master/release version of the dycore
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-In case the local dycore has not been modified and you know it has been installed by jenkins, we can compile COSMO and link against the version installed by jenkins.
-In this case  compiling the C++ dycore is not required. 
-First we need to find the hash of the C++ dycore installation for the desired variant (we set a dycore spec as an example): 
-
-.. code-block:: bash
-
-  DYCORE_SPEC="cosmo-dycore@master real_type=float build_type=Release +cuda"
-  DYCORE_HASH=$(spack find --format "{hash}" ${DYCORE_SPEC})
-
-If the configuration of variants required does not exists (it means it has not been installed by jenkins), we will have to compile
-the C++ dycore as well (you can skip the rest of this section and jump instead to :ref:`Compile a local version of COSMO`)
-
-Set the spack spec of COSMO:
-
-.. code-block:: bash 
-
-  COSMO_SPEC="cosmo@master%pgi real_type=float cosmo_target=gpu +cppdycore +claw ^/${DYCORE_HASH}"
-
-.. note:: The COSMO spack recipe contains a variant `production`. When activated as `+production` the spec will ensure that all other variants are the ones used to compile an executable for production. 
-
-In your working directory of cosmo, compile an executable using spack
-
-.. code-block:: bash
-
-  spack dev-build -i ${COSMO_SPEC}
-
-
-Testing COSMO with the Testsuite
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The following commands demonstrate how to launch the testsuite for a COSMO executable compiled in dev-build mode
-
-.. code-block:: bash 
-
-  module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
-  source <( spack module tcl loads ${SPACK_SPEC} )
-
-  # launch tests
-  cp -f <path/to/cosmo>/cosmo/ACC/cosmo_gpu cosmo/test/testsuite
-  cd cosmo/test/testsuite/data
-  ./get_data.sh
-  cd ..
-
-  if [[ $real_type == 'float' ]]; then
-    export REAL_TYPE=FLOAT
-  fi
-
-  if [[ $target == 'cpu' ]]; then
-    export JENKINS_NO_DYCORE=ON
-  fi
-
-  ASYNCIO=ON sbatch -p debug -W submit.tsa.slurm
 
 
 Any Other Package
