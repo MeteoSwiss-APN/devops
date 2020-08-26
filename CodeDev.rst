@@ -53,8 +53,9 @@ of cosmo.
   cd cosmo/test/testsuite
   ./data/get_data.sh
 
-  # get env
+  # get and source env
   spack build-env --dump cosmo.env $COSMO_SPEC -- #!one space after --
+  source cosmo.env
 
   export REAL_TYPE=DOUBLE #FLOAT for float
   

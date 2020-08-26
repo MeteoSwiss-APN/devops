@@ -84,8 +84,9 @@ cp -f <span class="nv">$COSMO_PATH</span>/bin/cosmo_gpu cosmo/test/testsuite <sp
 <span class="nb">cd</span> cosmo/test/testsuite
 ./data/get_data.sh
 
-<span class="c1"># get env</span>
+<span class="c1"># get and source env</span>
 spack build-env --dump cosmo.env <span class="nv">$COSMO_SPEC</span> -- <span class="c1">#!one space after --</span>
+<span class="nb">source</span> cosmo.env
 
 <span class="nb">export</span> <span class="nv">REAL_TYPE</span><span class="o">=</span>DOUBLE <span class="c1">#FLOAT for float</span>
 
