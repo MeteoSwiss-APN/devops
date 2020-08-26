@@ -15,30 +15,58 @@ Compile a local version of COSMO using devbuildcosmo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In this section we show how to compile a version of COSMO with a local C++ dycore. 
-Note: This is only required for GPU. For cpu we recomend to compile without c++ dycore. 
+Note: This is only required for GPU. For cpu we recomend to compile without
+c++ dycore.
 
-The recommanded method is to use the devbuildcosmo command. This takes the
+Here we assume the user has clone cosmo, is in the required branch/release and
+in the root folder of the cosmo repository. 
+
+The recommanded method to build with spack is to use the devbuildcosmo command. This takes the
 cosmo specification as input and will automatically compile and install the
 local dycore with the correct configuration and then compile and install
-cosmo.
+cosmo. Here is an example for gpu in double:
+
+.. code-block:: bash 
+  COSMO_SPEC="cosmo@dev-build%pgi real_type=double cosmo_target=gpu +cppdycore +claw"
+  spack devbuildcosmo $COSMO_SPEC
+  
+
+For cpu, double and no c++ dycore one would use:
+
+.. code-block:: bash
+  COSMO_SPEC="cosmo@dev-build%gnu real_type=double cosmo_target=cpu ~cppdycore"
+  spack devbuildcosmo $COSMO_SPEC
+
+
+Testing COSMO with the Testsuite
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following commands demonstrates how to launch the testsuite for a COSMO
+executable compiled using spack. Assuming the user starts from the root folder
+of cosmo.
 
 .. code-block:: bash 
 
-  spack devbuildcosmo cosmo@dev-build%pgi real_type=double cosmo_target=gpu +cppdycore +claw
+  # get executable and data
+  COSMO_PATH=`spack location -i $COSMO_SPEC`
+  cp -f $COSMO_PATH/bin/cosmo_gpu cosmo/test/testsuite # cosmo_cpu for cpu
+  cd cosmo/test/testsuite
+  ./data/get_data.sh
+
+  # get env
+  spack build-env --dump cosmo.env $COSMO_SPEC -- #!one space after --
+
+  export REAL_TYPE=DOUBLE #FLOAT for float
   
+  sbatch -p debug submit.tsa.slurm
 
-This example was for gpu in double, for cpu one would use:
-
-.. code-block:: bash
-
-  spack devbuildcosmo cosmo@dev-build%pgi real_type=double cosmo_target=cpu ~cppdycore 
 
 
 Compile a local version of COSMO using dev-build
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This is for advanced user (not recommanded), in case you don't want to adapt somethign in a
-compilation step.
+This is for advanced user (not recommanded). These information could be useful
+in case you want to manually adapt something in a compilation step.
 
 First we need to compile the local version of the dycore (as described in :ref:`Compile and Test a Local C++ dycore`).
 
@@ -80,26 +108,6 @@ Finally we can compile a COSMO executable from the working directory
 
   cd </path/to/cosmo>/
   spack dev-build -i ${COSMO_SPEC} ^/${DYCORE_HASH}
-
-
-Testing COSMO with the Testsuite
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The following commands demonstrate how to launch the testsuite for a COSMO executable compiled in dev-build mode
-
-.. code-block:: bash 
-
-  # launch tests
-  cp -f ./cosmo/ACC/cosmo_gpu cosmo/test/testsuite
-  cd cosmo/test/testsuite
-  ./data/get_data.sh
-
-  # get env
-  spack build-env --dump cosmo.env $COSMO_SPEC --
-
-  export REAL_TYPE=DOUBLE #FLOAT for float
-  
-  sbatch -p debug submit.tsa.slurm
 
 
 C++ dycore
