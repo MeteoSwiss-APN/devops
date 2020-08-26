@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COSMO &#8212; MeteoSwiss DevOps v0.0.1 documentation</title>
+    <title>Code Development &#8212; MeteoSwiss DevOps v0.0.1 documentation</title>
     <link rel="stylesheet" href="static/p_sphinx_theme.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="static/local_fonts.css" type="text/css" />
@@ -40,7 +40,7 @@
              accesskey="P">previous</a> &nbsp; &nbsp;</li>
       <li><a href="index.html">MeteoSwiss DevOps v0.0.1 documentation</a> &#187;</li>
 
-        <li class="nav-item nav-item-this"><a href="">COSMO</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Code Development</a></li> 
       </ul>
     </div>
       </div>
@@ -51,21 +51,35 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <blockquote>
-<div><p>Code Development</p>
-</div></blockquote>
-<hr class="docutils" />
+  <div class="section" id="code-development">
+<h1>Code Development<a class="headerlink" href="#code-development" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="cosmo">
-<h1>COSMO<a class="headerlink" href="#cosmo" title="Permalink to this headline">¶</a></h1>
+<h2>COSMO<a class="headerlink" href="#cosmo" title="Permalink to this headline">¶</a></h2>
 <p>Before we can start, we need to load the spack instance</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module load python/3.7.4
 . /project/g110/spack/user/tsa/spack/share/spack/setup-env.sh
 </pre></div>
 </div>
-<div class="section" id="compile-a-local-version-of-cosmo">
-<h2>Compile a local version of COSMO<a class="headerlink" href="#compile-a-local-version-of-cosmo" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="compile-a-local-version-of-cosmo-using-devbuildcosmo">
+<h3>Compile a local version of COSMO using devbuildcosmo<a class="headerlink" href="#compile-a-local-version-of-cosmo-using-devbuildcosmo" title="Permalink to this headline">¶</a></h3>
 <p>In this section we show how to compile a version of COSMO with a local C++ dycore.
 Note: This is only required for GPU. For cpu we recomend to compile without c++ dycore.</p>
+<p>The recommanded method is to use the devbuildcosmo command. This takes the
+cosmo specification as input and will automatically compile and install the
+local dycore with the correct configuration and then compile and install
+cosmo.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spack devbuildcosmo cosmo@dev-build%pgi <span class="nv">real_type</span><span class="o">=</span>double <span class="nv">cosmo_target</span><span class="o">=</span>gpu +cppdycore +claw
+</pre></div>
+</div>
+<p>This example was for gpu in double, for cpu one would use:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spack devbuildcosmo cosmo@dev-build%pgi <span class="nv">real_type</span><span class="o">=</span>double <span class="nv">cosmo_target</span><span class="o">=</span>cpu ~cppdycore
+</pre></div>
+</div>
+</div>
+<div class="section" id="compile-a-local-version-of-cosmo-using-dev-build">
+<h3>Compile a local version of COSMO using dev-build<a class="headerlink" href="#compile-a-local-version-of-cosmo-using-dev-build" title="Permalink to this headline">¶</a></h3>
+<p>This is for advanced user (not recommanded), in case you don’t want to adapt somethign in a
+compilation step.</p>
 <p>First we need to compile the local version of the dycore (as described in <a class="reference internal" href="#compile-and-test-a-local-c-dycore"><span class="std std-ref">Compile and Test a Local C++ dycore</span></a>).</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DYCORE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo-dycore@dev-build real_type=double +cuda build_type=Release ^openmpi%pgi&quot;</span>
 </pre></div>
@@ -95,7 +109,7 @@ spack dev-build -i <span class="si">${</span><span class="nv">COSMO_SPEC</span><
 </div>
 </div>
 <div class="section" id="testing-cosmo-with-the-testsuite">
-<h2>Testing COSMO with the Testsuite<a class="headerlink" href="#testing-cosmo-with-the-testsuite" title="Permalink to this headline">¶</a></h2>
+<h3>Testing COSMO with the Testsuite<a class="headerlink" href="#testing-cosmo-with-the-testsuite" title="Permalink to this headline">¶</a></h3>
 <p>The following commands demonstrate how to launch the testsuite for a COSMO executable compiled in dev-build mode</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># launch tests</span>
 cp -f ./cosmo/ACC/cosmo_gpu cosmo/test/testsuite
@@ -113,9 +127,9 @@ sbatch -p debug submit.tsa.slurm
 </div>
 </div>
 <div class="section" id="c-dycore">
-<h1>C++ dycore<a class="headerlink" href="#c-dycore" title="Permalink to this headline">¶</a></h1>
+<h2>C++ dycore<a class="headerlink" href="#c-dycore" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="serialized-unittest-data">
-<h2>Serialized unittest data<a class="headerlink" href="#serialized-unittest-data" title="Permalink to this headline">¶</a></h2>
+<h3>Serialized unittest data<a class="headerlink" href="#serialized-unittest-data" title="Permalink to this headline">¶</a></h3>
 <p>In order to run test the C++ dycore, the regression tests require a set of serialized data files from COSMO.
 Jenkins runs periodically the serialization (<a class="reference external" href="https://jenkins-mch.cscs.ch/job/cosmo_serialize/">https://jenkins-mch.cscs.ch/job/cosmo_serialize/</a>), which installs all the serialized data set corresponding to the latest master in the g110 project space. In order to find the location of the jenkins serialized data follow the steps described in <a class="reference internal" href="#locate-jenkins-serialized-data"><span class="std std-ref">Locate jenkins serialized data</span></a>.</p>
 <p>In a different development situation where you are modifying the FORTRAN COSMO dycore, the master serialized data by jenkins will not be compatible with your modifications.
@@ -126,7 +140,7 @@ In that case you need to serialize your own data (see <a class="reference intern
 </pre></div>
 </div>
 <div class="section" id="locate-jenkins-serialized-data">
-<h3>Locate jenkins serialized data<a class="headerlink" href="#locate-jenkins-serialized-data" title="Permalink to this headline">¶</a></h3>
+<h4>Locate jenkins serialized data<a class="headerlink" href="#locate-jenkins-serialized-data" title="Permalink to this headline">¶</a></h4>
 <p>This section describes how to find the location of the serialized data by jenkins for the master version of COSMO.</p>
 <p>Set the spack spec of COSMO for serialization mode:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@master%pgi real_type=float cosmo_target=cpu +serialize ~cppdycore&quot;</span>
@@ -138,7 +152,7 @@ In that case you need to serialize your own data (see <a class="reference intern
 </div>
 </div>
 <div class="section" id="serialize-your-own-data">
-<h3>Serialize your own data<a class="headerlink" href="#serialize-your-own-data" title="Permalink to this headline">¶</a></h3>
+<h4>Serialize your own data<a class="headerlink" href="#serialize-your-own-data" title="Permalink to this headline">¶</a></h4>
 <p>Set the spack spec (for dev-build version) of COSMO for serialization mode:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@dev-build%pgi real_type=float cosmo_target=cpu +serialize ~cppdycore&quot;</span>
 </pre></div>
@@ -170,7 +184,7 @@ python2 test/serialize/generateUnittestData.py -v -e cosmo_serialize --mpirun<sp
 </div>
 </div>
 <div class="section" id="compile-and-test-a-local-c-dycore">
-<h2>Compile and Test a Local C++ dycore<a class="headerlink" href="#compile-and-test-a-local-c-dycore" title="Permalink to this headline">¶</a></h2>
+<h3>Compile and Test a Local C++ dycore<a class="headerlink" href="#compile-and-test-a-local-c-dycore" title="Permalink to this headline">¶</a></h3>
 <p>This section describes how to compile and test a version of the COSMO C++ dycore from your working directory.</p>
 <p>Set a COSMO C++ dycore spec</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DYCORE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo-dycore@master real_type=float build_type=Release&quot;</span>
@@ -193,7 +207,7 @@ spack dev-build cosmo-dycore@master <span class="nv">real_type</span><span class
 <p>In case you need to run the tests on a compute node, you should prepend the previous command with <cite>srun</cite> and the corresponding arguments.</p>
 </div>
 <div class="section" id="recompile">
-<h2>Recompile<a class="headerlink" href="#recompile" title="Permalink to this headline">¶</a></h2>
+<h3>Recompile<a class="headerlink" href="#recompile" title="Permalink to this headline">¶</a></h3>
 <p>Once the <cite>spack dev-build</cite> has been called, the dycore can be recompiled any time by simply calling make on the build directory.
 Like that, spack is only needed to setup the build and environment.
 In order to use flat make for further compilations, you need to load first the spack dycore module</p>
@@ -209,7 +223,7 @@ make
 </div>
 </div>
 <div class="section" id="any-other-package">
-<h1>Any Other Package<a class="headerlink" href="#any-other-package" title="Permalink to this headline">¶</a></h1>
+<h2>Any Other Package<a class="headerlink" href="#any-other-package" title="Permalink to this headline">¶</a></h2>
 <p>The command <cite>spack dev-build</cite> can be used to compile any modified version of a MeteoSwiss software from your working directory.
 However being able to compile any other package might require installing your spack instance, if that package is installed by a jenkins plan.
 An attempt to build your working copy with the command</p>
@@ -235,6 +249,7 @@ spack dev-build &lt;package&gt;@&lt;version&gt;
 </pre></div>
 </div>
 </div>
+</div>
 
 
             <div class="clearer"></div>
@@ -245,8 +260,10 @@ spack dev-build &lt;package&gt;@&lt;version&gt;
         <div class="sphinxsidebarwrapper"><div class="sphinxlocaltoc">
     <h3><a href="index.html">Page contents</a></h3>
     <ul>
-<li><a class="reference internal" href="#">COSMO</a><ul>
-<li><a class="reference internal" href="#compile-a-local-version-of-cosmo">Compile a local version of COSMO</a></li>
+<li><a class="reference internal" href="#">Code Development</a><ul>
+<li><a class="reference internal" href="#cosmo">COSMO</a><ul>
+<li><a class="reference internal" href="#compile-a-local-version-of-cosmo-using-devbuildcosmo">Compile a local version of COSMO using devbuildcosmo</a></li>
+<li><a class="reference internal" href="#compile-a-local-version-of-cosmo-using-dev-build">Compile a local version of COSMO using dev-build</a></li>
 <li><a class="reference internal" href="#testing-cosmo-with-the-testsuite">Testing COSMO with the Testsuite</a></li>
 </ul>
 </li>
@@ -261,6 +278,8 @@ spack dev-build &lt;package&gt;@&lt;version&gt;
 </ul>
 </li>
 <li><a class="reference internal" href="#any-other-package">Any Other Package</a></li>
+</ul>
+</li>
 </ul>
 
   </div>
@@ -303,7 +322,7 @@ spack dev-build &lt;package&gt;@&lt;version&gt;
              >previous</a> &nbsp; &nbsp;</li>
       <li><a href="index.html">MeteoSwiss DevOps v0.0.1 documentation</a> &#187;</li>
 
-        <li class="nav-item nav-item-this"><a href="">COSMO</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Code Development</a></li> 
       </ul>
     </div>
       </div>

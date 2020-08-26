@@ -1,4 +1,4 @@
-  Code Development
+Code Development
 ==================
 
 COSMO
@@ -11,11 +11,34 @@ Before we can start, we need to load the spack instance
   module load python/3.7.4
   . /project/g110/spack/user/tsa/spack/share/spack/setup-env.sh
 
-Compile a local version of COSMO
+Compile a local version of COSMO using devbuildcosmo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In this section we show how to compile a version of COSMO with a local C++ dycore. 
 Note: This is only required for GPU. For cpu we recomend to compile without c++ dycore. 
+
+The recommanded method is to use the devbuildcosmo command. This takes the
+cosmo specification as input and will automatically compile and install the
+local dycore with the correct configuration and then compile and install
+cosmo.
+
+.. code-block:: bash 
+
+  spack devbuildcosmo cosmo@dev-build%pgi real_type=double cosmo_target=gpu +cppdycore +claw
+  
+
+This example was for gpu in double, for cpu one would use:
+
+.. code-block:: bash
+
+  spack devbuildcosmo cosmo@dev-build%pgi real_type=double cosmo_target=cpu ~cppdycore 
+
+
+Compile a local version of COSMO using dev-build
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This is for advanced user (not recommanded), in case you don't want to adapt somethign in a
+compilation step.
 
 First we need to compile the local version of the dycore (as described in :ref:`Compile and Test a Local C++ dycore`).
 
