@@ -27,13 +27,15 @@ local dycore with the correct configuration and then compile and install
 cosmo. Here is an example for gpu in double:
 
 .. code-block:: bash 
+
   COSMO_SPEC="cosmo@dev-build%pgi real_type=double cosmo_target=gpu +cppdycore +claw"
   spack devbuildcosmo $COSMO_SPEC
   
 
 For cpu, double and no c++ dycore one would use:
 
-.. code-block:: bash
+.. code-block:: bash 
+
   COSMO_SPEC="cosmo@dev-build%gnu real_type=double cosmo_target=cpu ~cppdycore"
   spack devbuildcosmo $COSMO_SPEC
 

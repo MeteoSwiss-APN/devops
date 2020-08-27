@@ -71,7 +71,15 @@ in the root folder of the cosmo repository.</p>
 cosmo specification as input and will automatically compile and install the
 local dycore with the correct configuration and then compile and install
 cosmo. Here is an example for gpu in double:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@dev-build%pgi real_type=double cosmo_target=gpu +cppdycore +claw&quot;</span>
+spack devbuildcosmo <span class="nv">$COSMO_SPEC</span>
+</pre></div>
+</div>
 <p>For cpu, double and no c++ dycore one would use:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@dev-build%gnu real_type=double cosmo_target=cpu ~cppdycore&quot;</span>
+spack devbuildcosmo <span class="nv">$COSMO_SPEC</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="testing-cosmo-with-the-testsuite">
 <h3>Testing COSMO with the Testsuite<a class="headerlink" href="#testing-cosmo-with-the-testsuite" title="Permalink to this headline">¶</a></h3>
