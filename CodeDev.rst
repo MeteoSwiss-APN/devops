@@ -6,10 +6,19 @@ COSMO
 
 Before we can start, we need to load the spack instance
 
+On Tsa:
+
 .. code-block:: bash
 
   module load python/3.7.4
   . /project/g110/spack/user/tsa/spack/share/spack/setup-env.sh
+
+On Daint:
+  
+.. code-block:: bash
+  
+  module load cray-python
+  . /project/g110/spack/user/daint/spack/share/spack/setup-env.sh
 
 Compile a local version of COSMO using devbuildcosmo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -27,16 +36,17 @@ local dycore with the correct configuration and then compile and install
 cosmo. Here is an example for gpu in double:
 
 .. code-block:: bash 
-
-  COSMO_SPEC="cosmo@dev-build%pgi real_type=double cosmo_target=gpu +cppdycore +claw"
-  spack devbuildcosmo $COSMO_SPEC
+  
+  cd </path/to/cosmo>
+  COSMO_SPEC="cosmo@dev-build%pgi real_type=double cosmo_target=gpu +cppdycore +claw" # careful +claw doesn't work on Daint!
+  spack devbuildcosmo $COSMO_SPEC # add -c for clean build, -t for testing
   
 
 For cpu, double and no c++ dycore one would use:
 
 .. code-block:: bash 
 
-  COSMO_SPEC="cosmo@dev-build%gnu real_type=double cosmo_target=cpu ~cppdycore"
+  COSMO_SPEC="cosmo@dev-build%gcc real_type=double cosmo_target=cpu ~cppdycore"
   spack devbuildcosmo $COSMO_SPEC
 
 
@@ -49,72 +59,16 @@ of cosmo.
 
 .. code-block:: bash 
 
-  # get executable and data
-  COSMO_PATH=`spack location -i $COSMO_SPEC`
-  cp -f $COSMO_PATH/bin/cosmo_gpu cosmo/test/testsuite # cosmo_cpu for cpu
-  cd cosmo/test/testsuite
-  ./data/get_data.sh
+  # copy executable to the testsuite folder
+  cp -f cosmo/ACC/cosmo_gpu cosmo/test/testsuite # cosmo_cpu for cpu
 
-  # get and source env
-  spack build-env --dump cosmo.env $COSMO_SPEC -- #!one space after --
-  source cosmo.env
+  # source the run environment
+  spack load $COSMO_SPEC
 
-  export REAL_TYPE=DOUBLE #FLOAT for float
+  # launch tests
+
+  ./cosmo/ACC/test/tools/test_cosmo.py -s $COSMO_SPEC -b .
   
-  sbatch -p debug submit.tsa.slurm
-
-
-
-Compile a local version of COSMO using dev-build
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This is for advanced user (not recommanded). These information could be useful
-in case you want to manually adapt something in a compilation step.
-
-First we need to compile the local version of the dycore (as described in :ref:`Compile and Test a Local C++ dycore`).
-
-.. code-block:: bash
-
-  DYCORE_SPEC="cosmo-dycore@dev-build real_type=double +cuda build_type=Release ^openmpi%pgi"
-
-Before installing the dycore we need to remove any previous installation
-
-.. code-block:: bash
-
-  spack uninstall -f ${DYCORE_SPEC}
-
-Next build and install a local C++ dycore executable
-
-.. code-block:: bash
-
-  cd </path/to/cosmo>
-  spack dev-build {DYCORE_SPEC}
-
-
-Find the hash of the `DYCORE_SPEC` that has just been installed.
-
-.. code-block:: bash
-
-  DYCORE_HASH=$(spack find --format "{hash}" ${DYCORE_SPEC})
-
-Make sure the DYCORE_HASH only contains one hash (e.g. echo $DYCORE_HASH)
-Set the COSMO spec
-
-.. code-block:: bash 
-
-  COSMO_SPEC="cosmo@dev-build%pgi real_type=double cosmo_target=gpu +cppdycore +claw"
-
-
-Finally we can compile a COSMO executable from the working directory
-
-.. code-block:: bash
-
-  cd </path/to/cosmo>/
-  spack dev-build -i ${COSMO_SPEC} ^/${DYCORE_HASH}
-
-
-C++ dycore
--------------
 
 Serialized unittest data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -141,7 +95,7 @@ Set the spack spec of COSMO for serialization mode:
 
 .. code-block:: bash
 
-  COSMO_SERIALIZE_SPEC="cosmo@master%pgi real_type=float cosmo_target=cpu +serialize ~cppdycore"
+  COSMO_SERIALIZE_SPEC="cosmo@dev-build%pgi real_type=float cosmo_target=cpu +serialize ~cppdycore"
 
 Find the spack install location of the serialized data
 
@@ -164,29 +118,19 @@ In your working directory of cosmo, build a spack COSMO executable for serializa
 .. code-block:: bash
 
   cd </path/to/cosmo>
-  spack dev-build ${COSMO_SERIALIZE_SPEC}
+  spack dev-build --until=build ${COSMO_SERIALIZE_SPEC}
 
-Load the spack instance modules
-
-.. code-block:: bash
-
-  module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
-  source <( spack module tcl loads ${COSMO_SERIALIZE_SPEC} )
-
-Get the testsuite data
+Load the correct run environment
 
 .. code-block:: bash
 
-  cd </path/to/cosmo>/cosmo/test/testsuite/data
-  ./get_data.sh
+  spack load ${COSMO_SERIALIZE_SPEC}
 
-Execute the serialized data generation
+Launch the serialization script
 
 .. code-block:: bash
 
-  cd </path/to/cosmo>/cosmo/ACC
-  python2 test/serialize/generateUnittestData.py -v -e cosmo_serialize --mpirun=srun
-
+  ./cosmo/ACC/test/tools/serialize_cosmo.py -s ${COSMO_SERIALIZE_SPEC} -b .
 
 Set the path to the serialized data (later it will be used in this guide)
 
@@ -203,54 +147,29 @@ Set a COSMO C++ dycore spec
 
 .. code-block:: bash
 
-  DYCORE_SPEC="cosmo-dycore@master real_type=float build_type=Release"
+  DYCORE_SPEC="cosmo-dycore@dev-build real_type=float build_type=Release"
 
 In your working directory of cosmo, build a C++ dycore executable 
 
 .. code-block:: bash
 
   cd </path/to/cosmo>
-  spack dev-build cosmo-dycore@master real_type=float build_type=Release +cuda
+  spack dev-build --until=build cosmo-dycore@dev-build real_type=float build_type=Release +cuda
 
-Load the spack dycore module
-
-.. code-block:: bash
-
-  module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
-  source <( spack module tcl loads ${DYCORE_SPEC} )
-
-Run the regression tests on a serialized data set, for example: 
-
-.. code-block:: bash
-  
-  </path/to/cosmo>/spack-build/src/tests/regression/regression_tests/regression_tests -p ${SERIALIZE_DATA}/cosmo1_test3
-
-In case you need to run the tests on a compute node, you should prepend the previous command with `srun` and the corresponding arguments. 
-
-
-Recompile 
-^^^^^^^^^^^
-
-Once the `spack dev-build` has been called, the dycore can be recompiled any time by simply calling make on the build directory.
-Like that, spack is only needed to setup the build and environment. 
-In order to use flat make for further compilations, you need to load first the spack dycore module
+Load the correct run environment
 
 .. code-block:: bash
 
-  module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
-  source <( spack module tcl loads ${DYCORE_SPEC} )
+  spack load ${DYCORE_SPEC}
 
-And build simply calling make in the right build directory 
+Launch the dycore test script
 
 .. code-block:: bash
-
-  cd </path/to/cosmo>/spack-build/
-  make
+  ./dycore/test/tools/test_dycore.py -s ${DYCORE_SPEC} -b spack-build -d ${SERIALIZE_DATA}
 
 
 Any Other Package
 ------------------------
-
 
 The command `spack dev-build` can be used to compile any modified version of a MeteoSwiss software from your working directory. 
 However being able to compile any other package might require installing your spack instance, if that package is installed by a jenkins plan.
