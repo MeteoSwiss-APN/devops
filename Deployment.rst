@@ -1,24 +1,25 @@
 Deployment of COSMO to OSM
 ============================ 
 
-How to create the env.txt for operations
------------------------------------------
-
-The only thing you need is the exact spack specification you want to extract the env from.
-
-For example:
+First, source the admin spack instance:
 
 .. code-block:: bash
-  COSMO_SPEC="cosmo@5.07.mch1.0.p10%pgi +pollen real_type=float cosmo_target=gpu"
+  # source spack instance
+  . /project/g110/spack/user/admin-$slave/spack/share/spack/setup-env.sh
 
-Then use the python script extract_env.py  and pass it this spec as argument
-
-.. code-block:: bash
-  git clone git@github.com:MeteoSwiss-APN/spack.git
-  ./spack-mch/tools/osm/extract_env.py -s $COSMO_SPEC -idir <installation_dir>
-
-This script is then creating a cosmo@version%compiler_run-env file depending on the given spec in your given installation folder. The run_env is then directly sourceable:
+Second, go to the pre-install spack-mch folder:
 
 .. code-block:: bash
-  cd <installation_dir>
-  source cosmo@version%compiler_run-env
+  cd /project/g110/spack-mch/tsa/spack-mch
+
+Specify the release tag which you want to deploy, with which eccodes definitions version you want to deploy it and the installations paths of both cosmo and eccodes (always precise the tag, the compiler and the compiler version!). For example:
+.. code-block:: bash
+  COSMO_SPEC="cosmo@5.07.mch1.0.p12%pgi@19.9 +pollen real_type=float cosmo_target=gpu +gt1 +production +claw +eccodes ^cosmo-eccodes-definitions@2.18.0.1"
+  ./tools/osm/extract_env.py -s $COSMO_SPEC -i <cosmo_installation_dir> -j <eccodes_installation_dir>
+
+This script is then installing both the tagged cosmo and eccodes under the given installations directories. A run-env file used to launch cosmo is also installed under the given cosmo install directory and is directly sourceable:
+
+.. code-block:: bash
+  cd <cosmo_installation_dir>
+  source run-env
+  mpirun cosmo_gpu
