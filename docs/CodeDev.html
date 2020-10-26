@@ -6,7 +6,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Code Development &#8212; MeteoSwiss DevOps v0.0.1 documentation</title>
     <link rel="stylesheet" href="static/p_sphinx_theme.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
@@ -56,8 +56,14 @@
 <div class="section" id="cosmo">
 <h2>COSMO<a class="headerlink" href="#cosmo" title="Permalink to this headline">¶</a></h2>
 <p>Before we can start, we need to load the spack instance</p>
+<p>On Tsa:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module load python/3.7.4
 . /project/g110/spack/user/tsa/spack/share/spack/setup-env.sh
+</pre></div>
+</div>
+<p>On Daint:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module load cray-python
+. /project/g110/spack/user/daint/spack/share/spack/setup-env.sh
 </pre></div>
 </div>
 <div class="section" id="compile-a-local-version-of-cosmo-using-devbuildcosmo">
@@ -71,12 +77,13 @@ in the root folder of the cosmo repository.</p>
 cosmo specification as input and will automatically compile and install the
 local dycore with the correct configuration and then compile and install
 cosmo. Here is an example for gpu in double:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@dev-build%pgi real_type=double cosmo_target=gpu +cppdycore +claw&quot;</span>
-spack devbuildcosmo <span class="nv">$COSMO_SPEC</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;
+<span class="nv">COSMO_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@dev-build%pgi real_type=double cosmo_target=gpu +cppdycore +claw&quot;</span> <span class="c1"># careful +claw doesn&#39;t work on Daint!</span>
+spack devbuildcosmo <span class="nv">$COSMO_SPEC</span> <span class="c1"># add -c for clean build, -t for testing</span>
 </pre></div>
 </div>
 <p>For cpu, double and no c++ dycore one would use:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@dev-build%gnu real_type=double cosmo_target=cpu ~cppdycore&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@dev-build%gcc real_type=double cosmo_target=cpu ~cppdycore&quot;</span>
 spack devbuildcosmo <span class="nv">$COSMO_SPEC</span>
 </pre></div>
 </div>
@@ -86,57 +93,18 @@ spack devbuildcosmo <span class="nv">$COSMO_SPEC</span>
 <p>The following commands demonstrates how to launch the testsuite for a COSMO
 executable compiled using spack. Assuming the user starts from the root folder
 of cosmo.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># get executable and data</span>
-<span class="nv">COSMO_PATH</span><span class="o">=</span><span class="sb">`</span>spack location -i <span class="nv">$COSMO_SPEC</span><span class="sb">`</span>
-cp -f <span class="nv">$COSMO_PATH</span>/bin/cosmo_gpu cosmo/test/testsuite <span class="c1"># cosmo_cpu for cpu</span>
-<span class="nb">cd</span> cosmo/test/testsuite
-./data/get_data.sh
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># copy executable to the testsuite folder</span>
+cp -f cosmo/ACC/cosmo_gpu cosmo/test/testsuite <span class="c1"># cosmo_cpu for cpu</span>
 
-<span class="c1"># get and source env</span>
-spack build-env --dump cosmo.env <span class="nv">$COSMO_SPEC</span> -- <span class="c1">#!one space after --</span>
-<span class="nb">source</span> cosmo.env
+<span class="c1"># source the run environment</span>
+spack load <span class="nv">$COSMO_SPEC</span>
 
-<span class="nb">export</span> <span class="nv">REAL_TYPE</span><span class="o">=</span>DOUBLE <span class="c1">#FLOAT for float</span>
+<span class="c1"># launch tests</span>
 
-sbatch -p debug submit.tsa.slurm
+./cosmo/ACC/test/tools/test_cosmo.py -s <span class="nv">$COSMO_SPEC</span> -b .
 </pre></div>
 </div>
 </div>
-<div class="section" id="compile-a-local-version-of-cosmo-using-dev-build">
-<h3>Compile a local version of COSMO using dev-build<a class="headerlink" href="#compile-a-local-version-of-cosmo-using-dev-build" title="Permalink to this headline">¶</a></h3>
-<p>This is for advanced user (not recommanded). These information could be useful
-in case you want to manually adapt something in a compilation step.</p>
-<p>First we need to compile the local version of the dycore (as described in <a class="reference internal" href="#compile-and-test-a-local-c-dycore"><span class="std std-ref">Compile and Test a Local C++ dycore</span></a>).</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DYCORE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo-dycore@dev-build real_type=double +cuda build_type=Release ^openmpi%pgi&quot;</span>
-</pre></div>
-</div>
-<p>Before installing the dycore we need to remove any previous installation</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spack uninstall -f <span class="si">${</span><span class="nv">DYCORE_SPEC</span><span class="si">}</span>
-</pre></div>
-</div>
-<p>Next build and install a local C++ dycore executable</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;
-spack dev-build <span class="o">{</span>DYCORE_SPEC<span class="o">}</span>
-</pre></div>
-</div>
-<p>Find the hash of the <cite>DYCORE_SPEC</cite> that has just been installed.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DYCORE_HASH</span><span class="o">=</span><span class="k">$(</span>spack find --format <span class="s2">&quot;{hash}&quot;</span> <span class="si">${</span><span class="nv">DYCORE_SPEC</span><span class="si">}</span><span class="k">)</span>
-</pre></div>
-</div>
-<p>Make sure the DYCORE_HASH only contains one hash (e.g. echo $DYCORE_HASH)
-Set the COSMO spec</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@dev-build%pgi real_type=double cosmo_target=gpu +cppdycore +claw&quot;</span>
-</pre></div>
-</div>
-<p>Finally we can compile a COSMO executable from the working directory</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;/
-spack dev-build -i <span class="si">${</span><span class="nv">COSMO_SPEC</span><span class="si">}</span> ^/<span class="si">${</span><span class="nv">DYCORE_HASH</span><span class="si">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="c-dycore">
-<h2>C++ dycore<a class="headerlink" href="#c-dycore" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="serialized-unittest-data">
 <h3>Serialized unittest data<a class="headerlink" href="#serialized-unittest-data" title="Permalink to this headline">¶</a></h3>
 <p>In order to run test the C++ dycore, the regression tests require a set of serialized data files from COSMO.
@@ -152,7 +120,7 @@ In that case you need to serialize your own data (see <a class="reference intern
 <h4>Locate jenkins serialized data<a class="headerlink" href="#locate-jenkins-serialized-data" title="Permalink to this headline">¶</a></h4>
 <p>This section describes how to find the location of the serialized data by jenkins for the master version of COSMO.</p>
 <p>Set the spack spec of COSMO for serialization mode:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@master%pgi real_type=float cosmo_target=cpu +serialize ~cppdycore&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@dev-build%pgi real_type=float cosmo_target=cpu +serialize ~cppdycore&quot;</span>
 </pre></div>
 </div>
 <p>Find the spack install location of the serialized data</p>
@@ -168,22 +136,15 @@ In that case you need to serialize your own data (see <a class="reference intern
 </div>
 <p>In your working directory of cosmo, build a spack COSMO executable for serialization</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;
-spack dev-build <span class="si">${</span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="si">}</span>
+spack dev-build --until<span class="o">=</span>build <span class="si">${</span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="si">}</span>
 </pre></div>
 </div>
-<p>Load the spack instance modules</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
-<span class="nb">source</span> &lt;<span class="o">(</span> spack module tcl loads <span class="si">${</span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="si">}</span> <span class="o">)</span>
+<p>Load the correct run environment</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spack load <span class="si">${</span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="si">}</span>
 </pre></div>
 </div>
-<p>Get the testsuite data</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;/cosmo/test/testsuite/data
-./get_data.sh
-</pre></div>
-</div>
-<p>Execute the serialized data generation</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;/cosmo/ACC
-python2 test/serialize/generateUnittestData.py -v -e cosmo_serialize --mpirun<span class="o">=</span>srun
+<p>Launch the serialization script</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./cosmo/ACC/test/tools/serialize_cosmo.py -s <span class="si">${</span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="si">}</span> -b .
 </pre></div>
 </div>
 <p>Set the path to the serialized data (later it will be used in this guide)</p>
@@ -196,39 +157,19 @@ python2 test/serialize/generateUnittestData.py -v -e cosmo_serialize --mpirun<sp
 <h3>Compile and Test a Local C++ dycore<a class="headerlink" href="#compile-and-test-a-local-c-dycore" title="Permalink to this headline">¶</a></h3>
 <p>This section describes how to compile and test a version of the COSMO C++ dycore from your working directory.</p>
 <p>Set a COSMO C++ dycore spec</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DYCORE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo-dycore@master real_type=float build_type=Release&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DYCORE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo-dycore@dev-build real_type=float build_type=Release&quot;</span>
 </pre></div>
 </div>
 <p>In your working directory of cosmo, build a C++ dycore executable</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;
-spack dev-build cosmo-dycore@master <span class="nv">real_type</span><span class="o">=</span>float <span class="nv">build_type</span><span class="o">=</span>Release +cuda
+spack dev-build --until<span class="o">=</span>build cosmo-dycore@dev-build <span class="nv">real_type</span><span class="o">=</span>float <span class="nv">build_type</span><span class="o">=</span>Release +cuda
 </pre></div>
 </div>
-<p>Load the spack dycore module</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
-<span class="nb">source</span> &lt;<span class="o">(</span> spack module tcl loads <span class="si">${</span><span class="nv">DYCORE_SPEC</span><span class="si">}</span> <span class="o">)</span>
+<p>Load the correct run environment</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spack load <span class="si">${</span><span class="nv">DYCORE_SPEC</span><span class="si">}</span>
 </pre></div>
 </div>
-<p>Run the regression tests on a serialized data set, for example:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&lt;/path/to/cosmo&gt;/spack-build/src/tests/regression/regression_tests/regression_tests -p <span class="si">${</span><span class="nv">SERIALIZE_DATA</span><span class="si">}</span>/cosmo1_test3
-</pre></div>
-</div>
-<p>In case you need to run the tests on a compute node, you should prepend the previous command with <cite>srun</cite> and the corresponding arguments.</p>
-</div>
-<div class="section" id="recompile">
-<h3>Recompile<a class="headerlink" href="#recompile" title="Permalink to this headline">¶</a></h3>
-<p>Once the <cite>spack dev-build</cite> has been called, the dycore can be recompiled any time by simply calling make on the build directory.
-Like that, spack is only needed to setup the build and environment.
-In order to use flat make for further compilations, you need to load first the spack dycore module</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module use /project/g110/modules/admin-tsa/linux-rhel7-skylake_avx512/
-<span class="nb">source</span> &lt;<span class="o">(</span> spack module tcl loads <span class="si">${</span><span class="nv">DYCORE_SPEC</span><span class="si">}</span> <span class="o">)</span>
-</pre></div>
-</div>
-<p>And build simply calling make in the right build directory</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;/spack-build/
-make
-</pre></div>
-</div>
+<p>Launch the dycore test script</p>
 </div>
 </div>
 <div class="section" id="any-other-package">
@@ -273,17 +214,12 @@ spack dev-build &lt;package&gt;@&lt;version&gt;
 <li><a class="reference internal" href="#cosmo">COSMO</a><ul>
 <li><a class="reference internal" href="#compile-a-local-version-of-cosmo-using-devbuildcosmo">Compile a local version of COSMO using devbuildcosmo</a></li>
 <li><a class="reference internal" href="#testing-cosmo-with-the-testsuite">Testing COSMO with the Testsuite</a></li>
-<li><a class="reference internal" href="#compile-a-local-version-of-cosmo-using-dev-build">Compile a local version of COSMO using dev-build</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#c-dycore">C++ dycore</a><ul>
 <li><a class="reference internal" href="#serialized-unittest-data">Serialized unittest data</a><ul>
 <li><a class="reference internal" href="#locate-jenkins-serialized-data">Locate jenkins serialized data</a></li>
 <li><a class="reference internal" href="#serialize-your-own-data">Serialize your own data</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#compile-and-test-a-local-c-dycore">Compile and Test a Local C++ dycore</a></li>
-<li><a class="reference internal" href="#recompile">Recompile</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#any-other-package">Any Other Package</a></li>
@@ -338,7 +274,7 @@ spack dev-build &lt;package&gt;@&lt;version&gt;
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Carlos Osuna.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
       <!-- PSphinxTheme -->
   </body>

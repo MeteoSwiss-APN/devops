@@ -6,7 +6,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MeteoSwiss Spack Instance &#8212; MeteoSwiss DevOps v0.0.1 documentation</title>
     <link rel="stylesheet" href="static/p_sphinx_theme.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
@@ -55,9 +55,31 @@
 <h1>MeteoSwiss Spack Instance<a class="headerlink" href="#meteoswiss-spack-instance" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="how-to-re-create-the-spack-instance">
 <h2>How to re-create the spack instance<a class="headerlink" href="#how-to-re-create-the-spack-instance" title="Permalink to this headline">¶</a></h2>
-<div class="admonition-todo admonition" id="id1">
-<p class="admonition-title">Todo</p>
-<p>&#64;Elsa can you document here the process to regenerate the spack instance/s ? And document when this is required.</p>
+<p>First, you might want to delete the old spack instances if you want to refresh them.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rm -rf /project/g110/spack/user/admin-<span class="nv">$slave</span> /project/g110/spack/user/<span class="nv">$slave</span>
+</pre></div>
+</div>
+<p>If you want to recreate them from scratch, don’t forget to remove their associated installations directories (modules, stages &amp; installations)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rm -rf /project/g110/modules/admin-<span class="nv">$slave</span>/ /project/g110/spack-stages/<span class="nv">$slave</span> /project/g110/spack-install/<span class="nv">$slave</span>
+</pre></div>
+</div>
+<p>Once this is done, you can use the config.py of the spack-mch instance to create the two mch instances (admin for the official installation under /project/g110/spack-install, users installation under /scratch/$user/spack/spack-install)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/MeteoSwiss-APN/spack-mch/
+<span class="nb">cd</span> spack-mch
+./config.py -m admin-<span class="nv">$slave</span> -i /project/g110/spack/user/admin-<span class="nv">$slave</span>
+./config.py -m <span class="nv">$slave</span> -i /project/g110/spack/user/<span class="nv">$slave</span>
+</pre></div>
+</div>
+<p>Finally install something with both instances to create a database file for the admin-instance respectively a junit-report file for the users instance, both files being needed to be able to source and install as a non-jenkins user. In order to do that first source the corresponding instances and then install something (Ex: the grib-api definitions).</p>
+<p>Admin instance:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>. /project/g110/spack/user/admin-<span class="nv">$slave</span>/spack/share/spack/setup-env.sh
+spack install cosmo-grib-api-definition
+</pre></div>
+</div>
+<p>Users instance:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>. /project/g110/spack/user/admin-<span class="nv">$slave</span>/spack/share/spack/setup-env.sh
+spack install cosmo-grib-api-definition
+</pre></div>
 </div>
 </div>
 </div>
@@ -124,7 +146,7 @@
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Carlos Osuna.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
       <!-- PSphinxTheme -->
   </body>
