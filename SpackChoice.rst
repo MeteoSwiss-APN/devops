@@ -54,7 +54,7 @@ and
 
 I believe the timeline of spack at MCH was roughly:
 
-* Sometime 2018 Valentine and Hannes gave a presentation about spack at MCH
+* Sometime 2018 Valentin and Hannes gave a presentation about spack at MCH
 * Summer 2019 an evaluation of possible solutions was done and it was determined
   that spack was the best option (probably same or similar reasons as above)
 * November 2019 Elsa started her build & devops internship and until November 2020
